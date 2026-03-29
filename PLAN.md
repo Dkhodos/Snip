@@ -18,7 +18,7 @@
 | Backend | Python / FastAPI | **Done** |
 | Backend Linting | Ruff | **Done** |
 | Backend Testing | pytest | Configured, tests TBD |
-| Auth | Clerk (B2B orgs) | **Done** (dev bypass) |
+| Auth | Clerk (B2B orgs, native UI) | **Done** |
 | Operational DB | Cloud SQL (Postgres) | **Done (local)** |
 | ORM / Migrations | SQLAlchemy + Alembic | **Done** |
 | Queue | Pub/Sub | Deferred |
@@ -44,8 +44,8 @@
 │   │   │   └── dashboard_backend/
 │   │   │       ├── __init__.py
 │   │   │       ├── main.py
-│   │   │       ├── config.py
-│   │   │       ├── clerk.py          # JWT validation middleware
+│   │   │       ├── config.py         # Pydantic Settings
+│   │   │       ├── clerk.py          # JWT validation + JWKS from publishable key
 │   │   │       └── routers/
 │   │   │           ├── __init__.py
 │   │   │           ├── links.py
@@ -60,24 +60,29 @@
 │   │
 │   └── dashboard-frontend/           # Vite SPA → Cloudflare Pages
 │       ├── src/
-│       │   ├── main.tsx
+│       │   ├── main.tsx              # ClerkProvider + QueryClient + Router
 │       │   ├── globals.css           # Snip brand colors + fonts
 │       │   ├── routes/
-│       │   │   ├── __root.tsx        # TanStack Router root layout
+│       │   │   ├── __root.tsx        # Auth guards + OrgGuard + AppShell
 │       │   │   ├── index.tsx         # Login (/)
 │       │   │   ├── dashboard.tsx     # Stats + clicks chart (/dashboard)
 │       │   │   ├── links.tsx         # Links table + create/edit/delete (/links)
-│       │   │   ├── settings.tsx      # Settings (/settings)
+│       │   │   ├── settings.tsx      # Org settings + members (/settings)
 │       │   │   └── dev.tsx           # Dev tools — seed (/dev, dev-only)
 │       │   ├── components/
-│       │   │   ├── ui/               # shadcn/ui primitives
+│       │   │   ├── ui/               # shadcn/ui primitives (14 components)
+│       │   │   ├── auth/             # auth-token-sync, org-guard
 │       │   │   ├── layout/           # app-shell, sidebar, header
 │       │   │   ├── dashboard/        # stats-cards, clicks-chart
-│       │   │   └── links/            # link-form-dialog, delete-link-dialog
+│       │   │   ├── links/            # link-form-dialog, delete-link-dialog
+│       │   │   └── org/              # org-switcher, org-avatar, create-org-form,
+│       │   │                         # create-org-dialog, org-general-settings,
+│       │   │                         # org-members, invite-member-dialog
 │       │   ├── hooks/                # use-stats, use-links, use-aggregate-clicks
 │       │   └── lib/
-│       │       ├── api.ts            # Typed API client (React Query)
+│       │       ├── api.ts            # Typed API client (axios + React Query)
 │       │       ├── utils.ts          # cn() utility
+│       │       ├── dev-mode.ts       # DEV_MODE constant (single source of truth)
 │       │       └── feature-flags.tsx # Feature flag context
 │       ├── index.html
 │       ├── vite.config.ts
@@ -118,7 +123,7 @@
 
 ---
 
-## Current Focus: Phases 0–3 (Local Dev + DB + Backend + Frontend)
+## Current Focus: Phases 0–3 (Local Dev + DB + Backend + Frontend + Auth)
 
 > Later phases (Terraform, Worker, CI/CD, Appsmith, Email) are deferred until the core app works locally.
 
@@ -139,35 +144,20 @@ members = ["apps/dashboard-backend", "packages/*"]
 ```
 
 ### 0.2 Docker Compose (`dev/docker-compose.yml`) ✅
-```yaml
-services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: shortener
-      POSTGRES_USER: shortener_app
-      POSTGRES_PASSWORD: localdev
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-
-volumes:
-  pgdata:
-```
+Postgres 15 with `shortener` DB, `shortener_app` user, port 5432.
 
 ### 0.3 Environment Template (`dev/.env.example`) ✅
 ```env
 DATABASE_URL=postgresql+asyncpg://shortener_app:localdev@localhost:5432/shortener
-CLERK_SECRET_KEY=sk_test_...
 CLERK_PUBLISHABLE_KEY=pk_test_...
+CLERK_SECRET_KEY=sk_test_...
 ENVIRONMENT=development
+
+# To run WITHOUT Clerk auth (dev bypass), leave the keys as pk_test_... / sk_test_...
+# To run WITH Clerk auth locally, replace with real keys from https://dashboard.clerk.com
 ```
 
-### 0.4 .gitignore ✅
-Standard Python + Node + Terraform + .env + __pycache__ + node_modules + dist + .venv + .terraform
-
-### 0.5 Quick Start ✅
+### 0.4 Quick Start ✅
 ```bash
 # Start Postgres
 cd dev && docker compose up -d && cd ..
@@ -193,181 +183,130 @@ curl -X POST http://localhost:8080/dev/seed
 
 ## Phase 1 — Database Schema (`packages/db`) ✅
 
-### 1.1 DB Package (`packages/db/pyproject.toml`) ✅
-```toml
-[project]
-name = "snip-db"
-version = "0.1.0"
-requires-python = ">=3.12"
-dependencies = [
-    "sqlalchemy>=2.0",
-    "alembic>=1.13",
-    "greenlet",
-]
+### 1.1 Models ✅
+All use SQLAlchemy 2.0 `Mapped`/`mapped_column` style with `DeclarativeBase` + naming conventions.
 
-[project.optional-dependencies]
-pg = ["asyncpg>=0.29"]
-psycopg = ["psycopg[binary]"]
-test = ["pytest", "pytest-asyncio"]
+- **Link** — id (UUID PK), org_id, short_code (unique), target_url, title, click_count, is_active, created_by, created_at, expires_at
+- **ClickEvent** — id (UUID PK), link_id (FK→links), clicked_at, user_agent, country
+- **FeatureFlag** — id (int PK), key (unique), enabled, description, updated_by, updated_at
 
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-```
+### 1.2 Engine ✅
+Module-level `_session_factory` pattern, `init_session_factory()` called during FastAPI lifespan, `get_session` async generator for `Depends()`.
 
-### 1.2 Base Model (`src/snip_db/models/base.py`) ✅
-SQLAlchemy 2.0 `DeclarativeBase` with `NAMING_CONVENTION` for constraints.
-
-### 1.3 Models ✅
-All use SQLAlchemy 2.0 `Mapped`/`mapped_column` style.
-
-**Link** — id (UUID PK), org_id, short_code (unique), target_url, title, click_count, is_active, created_by, created_at, expires_at
-
-**ClickEvent** — id (UUID PK), link_id (FK→links), clicked_at, user_agent, country
-
-**FeatureFlag** — id (int PK), key (unique), enabled, description, updated_by, updated_at
-
-### 1.4 Engine (`src/snip_db/engine.py`) ✅
-- Module-level `_session_factory` pattern with `init_session_factory()` called during FastAPI lifespan
-- `get_session` async generator for FastAPI `Depends()`
-- Async engine from DATABASE_URL
-
-### 1.5 Alembic ✅
-- `alembic.ini` at package root, `script_location = src/snip_db/migrations`
-- `env.py` imports all models, targets `Base.metadata`, converts async URL to psycopg for offline mode
-- Initial migration: autogenerate from models
-- Seed migration: insert 3 default feature flags (`analytics_dashboard`, `custom_short_codes`, `link_expiry`)
+### 1.3 Alembic ✅
+Initial migration (autogenerate) + seed migration (3 default feature flags).
 
 ---
 
 ## Phase 2 — FastAPI Backend (`apps/dashboard-backend`) ✅
 
-### 2.1 Dependencies (`pyproject.toml`) ✅
-```toml
-[project]
-name = "dashboard-backend"
-version = "0.1.0"
-requires-python = ">=3.12"
-dependencies = [
-    "snip-db[pg]",
-    "fastapi[standard]",
-    "pydantic-settings",
-    "httpx",
-    "python-jose[cryptography]",
-    "shortuuid",
-]
+### 2.1 Config (`config.py`) ✅
+Pydantic Settings: `DATABASE_URL`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `ENVIRONMENT`.
 
-[tool.uv.sources]
-snip-db = { workspace = true }
+### 2.2 Clerk JWT Middleware (`clerk.py`) ✅
+- Derives JWKS URL from publishable key (base64-decodes Frontend API domain)
+- Validates Bearer token, extracts `user_id` and `org_id`
+- **Rejects 403** if `org_id` is missing (B2B requires org context)
+- Dev bypass when keys are placeholders (`sk_test_...`) → `ClerkUser(user_id="dev_user", org_id="dev_org")`
 
-[tool.ruff]
-target-version = "py312"
-line-length = 100
-```
+### 2.3 Routers ✅
 
-### 2.2 Config (`config.py`) ✅
-Pydantic Settings: DATABASE_URL, CLERK_SECRET_KEY, ENVIRONMENT (default "development")
+| Router | Endpoints |
+|---|---|
+| **Links** | `POST /links` (title required, optional custom short code), `GET /links` (paginated, search, sort, status filter), `GET /links/{id}`, `PATCH /links/{id}`, `DELETE /links/{id}` (soft delete) |
+| **Redirect** | `GET /r/{short_code}` (302, increment click_count, record ClickEvent) |
+| **Clicks** | `GET /links/{id}/clicks` (7-day breakdown), `GET /clicks/aggregate` (30-day org-wide) |
+| **Stats** | `GET /stats` (total_links, total_clicks, active_links, expired_links) |
+| **Flags** | `GET /flags` ({key: enabled} map, 60s TTL cache) |
+| **Seed** | `POST /dev/seed` (dev-only, conditionally mounted, 25 links + click events) |
 
-### 2.3 Clerk JWT Middleware (`clerk.py`) ✅
-- Fetch JWKS from Clerk
-- Validate Bearer token, extract org_id + user_id
-- Dev bypass when ENVIRONMENT=development → returns `ClerkUser(user_id="dev_user", org_id="dev_org")`
-
-### 2.4 Routers ✅
-
-**Links** (`routers/links.py`):
-```
-POST   /links              — create link (title required, optional custom short code)
-GET    /links              — list for org (paginated, search, sort, status filter)
-GET    /links/{id}         — single link
-PATCH  /links/{id}         — update (target_url, title, is_active)
-DELETE /links/{id}         — soft delete (sets is_active=false)
-```
-
-**Redirect** (`routers/redirect.py`):
-```
-GET    /r/{short_code}     — public, 302 redirect, increment click_count, record ClickEvent
-```
-
-**Clicks** (`routers/clicks.py`):
-```
-GET    /links/{id}/clicks  — click_count + last 7 days daily breakdown
-GET    /clicks/aggregate   — org-wide last 30 days daily breakdown
-```
-
-**Stats** (`routers/stats.py`):
-```
-GET    /stats              — total_links, total_clicks, active_links, expired_links
-```
-
-**Flags** (`routers/flags.py`):
-```
-GET    /flags              — {key: enabled} map, 60s in-memory TTL cache
-```
-
-**Seed** (`routers/seed.py`) — dev-only, conditionally mounted:
-```
-POST   /dev/seed           — seeds 25 links + weighted click events (dev env only)
-```
-
-### 2.5 Main (`main.py`) ✅
-- FastAPI app with lifespan for DB init/teardown
-- CORS for localhost:5173
-- Seed router only mounted when `ENVIRONMENT=development`
+### 2.4 Main (`main.py`) ✅
+FastAPI app with lifespan (DB init/teardown), CORS for localhost:5173, seed router only mounted in development.
 
 ---
 
 ## Phase 3 — Frontend (`apps/dashboard-frontend`) ✅
 
 ### 3.1 Stack ✅
-- **Vite** — bundler + TanStack Router plugin
+- **Vite** + TanStack Router plugin
 - **React 19** + **TypeScript**
 - **TanStack Router** — file-based routing
-- **TanStack Query (React Query)** — server state
-- **shadcn/ui** — component library (dark mode default, teal-cyan brand)
+- **TanStack Query** — server state
+- **shadcn/ui** — 14 components (button, card, input, table, badge, skeleton, dropdown-menu, separator, tooltip, avatar, sheet, scroll-area, dialog, alert-dialog)
 - **Biome** — linting + formatting
 - **Vitest** — testing (configured, tests TBD)
-- **@clerk/react** — auth (v6, uses `<Show when="signed-in">`)
+- **@clerk/react** v6 — auth (Clerk hooks for org management, native UI)
 - **pnpm** — package manager
 - **Recharts** — charts
 - **Lucide React** — icons
 
-### 3.2 Brand
-- Primary color: teal-cyan `hsl(173 80% 50%)`
+### 3.2 Brand ✅
+- Primary: teal-cyan `hsl(173 80% 50%)`
 - Fonts: Inter (UI) + JetBrains Mono (code)
 - Logo: scissors SVG (`snip-logo.tsx`)
+- Dark mode default
 
-### 3.3 Pages ✅
+### 3.3 Auth & Organization Flow ✅
+
+**Dev bypass** (`src/lib/dev-mode.ts`):
+- Single source of truth: `DEV_MODE = !CLERK_KEY || CLERK_KEY === "pk_test_..."`
+- When active: skips ClerkProvider, OrgGuard, org switcher; uses static "Dev Org"
+
+**Auth flow** (with real Clerk keys):
+1. Unauthenticated → `<RedirectToSignIn />` (Clerk hosted sign-in)
+2. Authenticated, no org → `OrgGuard` shows native create-org form (name + slug)
+3. Authenticated, has org → dashboard with data scoped to active org
+
+**Token sync** (`auth-token-sync.tsx`):
+- `useAuth().getToken({ skipCache: true })` on org change
+- Injects Bearer token into axios via `setAuthToken()`
+- Invalidates all React Query caches on org switch
+- Refreshes every 50s
+
+**Organization management** (all native shadcn/ui, no Clerk pre-built components):
+
+| Component | Location | Description |
+|---|---|---|
+| `OrgGuard` | `components/auth/` | Blocks access until org exists; shows create-org form |
+| `OrgSwitcher` | `components/org/` | Dropdown in sidebar: current org, list all, switch, create new |
+| `OrgAvatar` | `components/org/` | Avatar with initials fallback, reused across org UI |
+| `CreateOrgForm` | `components/org/` | Name + auto-slugified slug, calls `createOrganization` + `setActive` |
+| `CreateOrgDialog` | `components/org/` | Dialog wrapper around CreateOrgForm (triggered from switcher) |
+| `OrgGeneralSettings` | `components/org/` | Edit org name/slug (admin only) |
+| `OrgMembers` | `components/org/` | Members table with roles, remove (admin), pending invitations |
+| `InviteMemberDialog` | `components/org/` | Invite by email with role picker (Member/Admin) |
+
+### 3.4 Pages ✅
 
 **Login** (`/`):
-- Clerk `<SignIn />` component (skipped in dev mode)
+- Clerk sign-in (skipped in dev mode → straight to dashboard)
 
 **Dashboard** (`/dashboard`):
 - 4 stat cards (total links, total clicks, active links, expired links)
 - Area chart — aggregate clicks over 30 days
-- Page scrolls normally
 
 **Links** (`/links`):
-- Full links table with search, sort (title/clicks/created), status filter (all/active/inactive/expired)
-- "Create Link" button opens dialog (title required, URL required, optional custom short code)
-- Kebab menu per row: Copy URL, Edit (dialog), Delete (confirmation dialog)
-- Table scrolls within fixed height, sticky header, pagination pinned at bottom
-- Page does not scroll
+- Full links table with search, sort, status filter, pagination
+- Create Link dialog (title required, URL required, optional custom short code)
+- Kebab menu: Copy URL, Edit (dialog), Delete (confirmation)
+- Table scrolls within fixed height, sticky header
 
 **Settings** (`/settings`):
-- Placeholder
+- Org general settings card (name, slug — editable for admins)
+- Members card (table with roles, remove, invite)
+- In dev mode: placeholder message
 
 **Dev Tools** (`/dev`) — dev-only:
 - Seed database button
 - Redirects to `/dashboard` if not in dev mode
 
-### 3.4 Layout ✅
-- Fixed sidebar (w-60): Snip logo, nav (Dashboard, Links, Settings), dev section with Dev Tools link
-- Header: mobile hamburger menu (Sheet), user avatar dropdown
+### 3.5 Layout ✅
+- Fixed sidebar (w-60): Snip logo → org switcher → nav (Dashboard, Links, Settings) → dev section
+- Header: mobile hamburger menu (Sheet), user avatar dropdown (Settings, Sign Out)
 - Full-height flex layout, each route controls its own scroll behavior
 
-### 3.5 API Integration ✅
-- Axios client with Clerk token injection
+### 3.6 API Integration ✅
+- Axios client with Clerk token injection (Bearer)
 - React Query hooks: `useStats`, `useLinks` (with `keepPreviousData`), `useAggregateClicks`
 - Feature flags via context provider (60s stale/refetch)
 - Vite proxy: `/api` → `localhost:8080`
@@ -375,8 +314,6 @@ POST   /dev/seed           — seeds 25 links + weighted click events (dev env o
 ---
 
 ## Deferred Phases (Build Later)
-
-The following phases from the original plan remain unchanged but are deferred:
 
 - **Phase 4** — Terraform Infrastructure
 - **Phase 5** — Click Worker (Pub/Sub → BigQuery)
@@ -391,9 +328,9 @@ The following phases from the original plan remain unchanged but are deferred:
 
 | Variable | Where | Used by |
 |---|---|---|
-| `DATABASE_URL` | dev/.env.example | DB package, Backend |
-| `CLERK_SECRET_KEY` | dev/.env.example | Backend |
-| `CLERK_PUBLISHABLE_KEY` | dev/.env.example | Frontend |
-| `ENVIRONMENT` | dev/.env.example | Backend |
-| `VITE_API_URL` | Frontend .env | Frontend |
-| `VITE_CLERK_PUBLISHABLE_KEY` | Frontend .env | Frontend |
+| `DATABASE_URL` | Backend .env | DB package, Backend |
+| `CLERK_PUBLISHABLE_KEY` | Backend .env | Backend (JWKS URL derivation) |
+| `CLERK_SECRET_KEY` | Backend .env | Backend (dev bypass check) |
+| `ENVIRONMENT` | Backend .env | Backend (dev mode, seed router) |
+| `VITE_CLERK_PUBLISHABLE_KEY` | Frontend .env.local | Frontend (ClerkProvider, DEV_MODE) |
+| `VITE_API_URL` | Frontend .env.local | Frontend (API base URL, optional) |
