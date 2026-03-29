@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "httpx", "ruff"]
+dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "aiosqlite"]
 
 [tool.uv.sources]
 snip-db = { workspace = true }
@@ -23,6 +23,11 @@ line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
+ignore = ["B008"]  # B008: Depends() in function defaults is standard FastAPI pattern
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
