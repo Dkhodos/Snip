@@ -1,12 +1,11 @@
 import { Link } from "@tanstack/react-router";
 import { LayoutDashboard, Link2, Settings, Wrench } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DEV_MODE } from "@/lib/dev-mode";
 import { SnipLogo } from "@/components/snip-logo";
+import { OrgSwitcher } from "@/components/org/org-switcher";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-
-const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const DEV_MODE = !CLERK_KEY || CLERK_KEY === "sk_test_...";
 
 interface NavItem {
   label: string;
@@ -24,6 +23,28 @@ const devNavItems: NavItem[] = [
   { label: "Dev Tools", to: "/dev", icon: Wrench },
 ];
 
+function NavLinks({ items }: { items: NavItem[] }) {
+  return (
+    <nav className="flex flex-col gap-1">
+      {items.map((item) => (
+        <Link
+          key={item.to}
+          to={item.to}
+          className={cn(
+            "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
+          )}
+          activeProps={{
+            className: "bg-accent text-accent-foreground",
+          }}
+        >
+          <item.icon className="h-4 w-4" />
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
 export function Sidebar() {
   return (
     <div className="flex h-full w-60 flex-col border-r border-border bg-background">
@@ -34,47 +55,26 @@ export function Sidebar() {
 
       <Separator />
 
+      <div className="px-3 py-3">
+        {DEV_MODE ? (
+          <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2">
+            <span className="text-sm font-medium">Dev Org</span>
+          </div>
+        ) : (
+          <OrgSwitcher />
+        )}
+      </div>
+
+      <Separator />
+
       <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="flex flex-col gap-1">
-          {navItems.map((item) => (
-            <Link
-              key={item.to}
-              to={item.to}
-              className={cn(
-                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-              )}
-              activeProps={{
-                className:
-                  "bg-accent text-accent-foreground",
-              }}
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
-          ))}
-        </nav>
+        <NavLinks items={navItems} />
       </ScrollArea>
 
       {DEV_MODE && (
         <div className="border-t border-border px-3 py-4">
           <p className="mb-2 px-3 text-xs font-medium uppercase text-muted-foreground">Dev</p>
-          <nav className="flex flex-col gap-1">
-            {devNavItems.map((item) => (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground",
-                )}
-                activeProps={{
-                  className: "bg-accent text-accent-foreground",
-                }}
-              >
-                <item.icon className="h-4 w-4" />
-                {item.label}
-              </Link>
-            ))}
-          </nav>
+          <NavLinks items={devNavItems} />
         </div>
       )}
     </div>

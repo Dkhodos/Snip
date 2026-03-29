@@ -1,10 +1,12 @@
-import { RedirectToSignIn, Show } from "@clerk/react";
-import { createRootRoute } from "@tanstack/react-router";
+import { useAuth } from "@clerk/react";
+import { createRootRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { AuthTokenSync } from "@/components/auth/auth-token-sync";
+import { OrgGuard } from "@/components/auth/org-guard";
 import { AppShell } from "@/components/layout/app-shell";
+import { FullPageLoader } from "@/components/ui/full-page-loader";
 import { FeatureFlagProvider } from "@/lib/feature-flags";
-
-const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const DEV_MODE = !CLERK_KEY || CLERK_KEY === "sk_test_...";
+import { DEV_MODE } from "@/lib/dev-mode";
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -19,16 +21,39 @@ function RootLayout() {
     );
   }
 
+  return <AuthenticatedLayout />;
+}
+
+function AuthenticatedLayout() {
+  const { isLoaded, isSignedIn } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      // Let the index route handle showing SignIn
+      return;
+    }
+    if (isLoaded && isSignedIn && window.location.pathname === "/") {
+      navigate({ to: "/dashboard" });
+    }
+  }, [isLoaded, isSignedIn, navigate]);
+
+  if (!isLoaded) {
+    return <FullPageLoader />;
+  }
+
+  if (!isSignedIn) {
+    return <Outlet />;
+  }
+
   return (
     <>
-      <Show when="signed-out">
-        <RedirectToSignIn />
-      </Show>
-      <Show when="signed-in">
+      <AuthTokenSync />
+      <OrgGuard>
         <FeatureFlagProvider>
           <AppShell />
         </FeatureFlagProvider>
-      </Show>
+      </OrgGuard>
     </>
   );
 }

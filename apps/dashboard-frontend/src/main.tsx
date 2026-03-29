@@ -3,11 +3,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { RouterProvider, createRouter } from "@tanstack/react-router";
 import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
+import { DEV_MODE } from "@/lib/dev-mode";
 import { routeTree } from "./routeTree.gen";
 import "./globals.css";
 
 const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const DEV_MODE = !CLERK_KEY || CLERK_KEY === "sk_test_...";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -30,7 +30,14 @@ function AuthProvider({ children }: { children: ReactNode }) {
   if (DEV_MODE) {
     return <>{children}</>;
   }
-  return <ClerkProvider publishableKey={CLERK_KEY}>{children}</ClerkProvider>;
+  return (
+    <ClerkProvider
+      publishableKey={CLERK_KEY}
+      afterSignOutUrl="/"
+    >
+      {children}
+    </ClerkProvider>
+  );
 }
 
 const root = document.getElementById("root");

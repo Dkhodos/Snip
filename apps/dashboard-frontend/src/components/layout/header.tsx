@@ -2,6 +2,7 @@ import { useClerk } from "@clerk/react";
 import { Link } from "@tanstack/react-router";
 import { LogOut, Menu, Settings } from "lucide-react";
 import { useState } from "react";
+import { DEV_MODE } from "@/lib/dev-mode";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,9 +15,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Sidebar } from "./sidebar";
-
-const CLERK_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-const DEV_MODE = !CLERK_KEY || CLERK_KEY === "sk_test_...";
 
 export function Header() {
   const [sheetOpen, setSheetOpen] = useState(false);
@@ -71,12 +69,7 @@ function UserMenu() {
 function SignOutItem() {
   if (DEV_MODE) {
     return (
-      <DropdownMenuItem
-        className="flex cursor-pointer items-center gap-2"
-        onSelect={() => {
-          /* no-op in dev mode */
-        }}
-      >
+      <DropdownMenuItem className="flex cursor-pointer items-center gap-2">
         <LogOut className="h-4 w-4" />
         Sign Out
       </DropdownMenuItem>

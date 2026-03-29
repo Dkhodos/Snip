@@ -1,13 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Database } from "lucide-react";
+import { DEV_MODE } from "@/lib/dev-mode";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { seedDevData } from "@/lib/api";
-
-const DEV_MODE =
-  !import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ||
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY === "sk_test_...";
 
 export const Route = createFileRoute("/dev")({
   component: DevToolsPage,
