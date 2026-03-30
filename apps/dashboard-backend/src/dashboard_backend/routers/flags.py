@@ -1,5 +1,7 @@
 """Feature flags router."""
 
+from __future__ import annotations
+
 from fastapi import APIRouter, Depends
 
 from dashboard_backend.dependencies import get_feature_flag_manager

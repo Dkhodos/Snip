@@ -1,5 +1,7 @@
 """Link business logic manager."""
 
+from __future__ import annotations
+
 import shortuuid
 from snip_db.models import Link
 

@@ -1,5 +1,7 @@
 """Feature flag data access store."""
 
+from __future__ import annotations
+
 from snip_db.models import FeatureFlag
 
 from dashboard_backend.stores.base_store import BaseStore

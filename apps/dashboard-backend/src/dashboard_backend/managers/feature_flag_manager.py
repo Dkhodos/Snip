@@ -1,5 +1,7 @@
 """Feature flag business logic manager."""
 
+from __future__ import annotations
+
 import time
 
 from dashboard_backend.stores.feature_flag_store import FeatureFlagStore
