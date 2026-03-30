@@ -2,7 +2,7 @@
 
 import base64
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Dict, Optional, Protocol
 
 import httpx
 from jose import JWTError, jwt
@@ -27,7 +27,7 @@ class ClerkClient:
 
     def __init__(self, publishable_key: str) -> None:
         self._publishable_key = publishable_key
-        self._jwks_cache: dict | None = None
+        self._jwks_cache: Optional[Dict] = None
 
     def _get_jwks_url(self) -> str:
         encoded = self._publishable_key.split("_", 2)[-1]

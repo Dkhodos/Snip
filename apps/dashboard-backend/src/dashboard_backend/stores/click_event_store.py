@@ -1,8 +1,7 @@
 """Click event data access store."""
 
-from __future__ import annotations
-
 from datetime import datetime
+from typing import Dict, List, Optional
 from uuid import UUID
 
 from snip_db.models import ClickEvent, Link
@@ -19,9 +18,9 @@ class ClickEventStore(BaseStore[ClickEvent]):
         *,
         link_id: UUID,
         clicked_at: datetime,
-        user_agent: str | None = None,
-        country: str | None = None,
-        event_id: UUID | None = None,
+        user_agent: Optional[str] = None,
+        country: Optional[str] = None,
+        event_id: Optional[UUID] = None,
     ) -> ClickEvent:
         kwargs: dict = {
             "link_id": link_id,
@@ -37,7 +36,7 @@ class ClickEventStore(BaseStore[ClickEvent]):
         await self.flush()
         return event
 
-    async def get_daily_clicks_for_link(self, link_id: UUID, since: datetime) -> list[dict]:
+    async def get_daily_clicks_for_link(self, link_id: UUID, since: datetime) -> List[Dict]:
         query = (
             select(
                 func.date(ClickEvent.clicked_at).label("date"),
@@ -50,7 +49,7 @@ class ClickEventStore(BaseStore[ClickEvent]):
         result = await self._session.execute(query)
         return [{"date": str(row.date), "count": row.count} for row in result]
 
-    async def get_daily_clicks_for_org(self, org_id: str, since: datetime) -> list[dict]:
+    async def get_daily_clicks_for_org(self, org_id: str, since: datetime) -> List[Dict]:
         query = (
             select(
                 func.date(ClickEvent.clicked_at).label("date"),
@@ -64,6 +63,6 @@ class ClickEventStore(BaseStore[ClickEvent]):
         result = await self._session.execute(query)
         return [{"date": str(row.date), "count": row.count} for row in result]
 
-    async def delete_by_link_ids(self, link_ids: list[UUID]) -> None:
+    async def delete_by_link_ids(self, link_ids: List[UUID]) -> None:
         if link_ids:
             await self._session.execute(delete(ClickEvent).where(ClickEvent.link_id.in_(link_ids)))

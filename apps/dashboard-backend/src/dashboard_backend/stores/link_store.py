@@ -1,8 +1,7 @@
 """Link data access store."""
 
-from __future__ import annotations
-
 from datetime import datetime
+from typing import List, Optional, Tuple
 from uuid import UUID
 
 from snip_db.models import Link
@@ -24,9 +23,9 @@ class LinkStore(BaseStore[Link]):
         created_by: str,
         click_count: int = 0,
         is_active: bool = True,
-        created_at: datetime | None = None,
-        expires_at: datetime | None = None,
-        link_id: UUID | None = None,
+        created_at: Optional[datetime] = None,
+        expires_at: Optional[datetime] = None,
+        link_id: Optional[UUID] = None,
     ) -> Link:
         kwargs: dict = {
             "org_id": org_id,
@@ -48,10 +47,12 @@ class LinkStore(BaseStore[Link]):
         self._add(link)
         return await self._flush_and_refresh(link)
 
-    async def get_by_id(self, link_id: UUID, org_id: str) -> Link | None:
+    async def get_by_id(self, link_id: UUID, org_id: str) -> Optional[Link]:
         return await self._get_one_or_none(Link.id == link_id, Link.org_id == org_id)
 
-    async def get_by_short_code(self, short_code: str, *, active_only: bool = False) -> Link | None:
+    async def get_by_short_code(
+        self, short_code: str, *, active_only: bool = False
+    ) -> Optional[Link]:
         conditions = [Link.short_code == short_code]
         if active_only:
             conditions.append(Link.is_active.is_(True))
@@ -63,11 +64,11 @@ class LinkStore(BaseStore[Link]):
         *,
         page: int = 1,
         limit: int = 20,
-        search: str | None = None,
+        search: Optional[str] = None,
         sort_by: str = "created_at",
         sort_order: str = "desc",
-        status: str | None = None,
-    ) -> tuple[list[Link], int]:
+        status: Optional[str] = None,
+    ) -> Tuple[List[Link], int]:
         base_filter = [Link.org_id == org_id]
 
         if search:
@@ -144,7 +145,7 @@ class LinkStore(BaseStore[Link]):
             "expired_links": expired,
         }
 
-    async def get_ids_by_org(self, org_id: str) -> list[UUID]:
+    async def get_ids_by_org(self, org_id: str) -> List[UUID]:
         result = await self._session.execute(select(Link.id).where(Link.org_id == org_id))
         return [row[0] for row in result.all()]
 

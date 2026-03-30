@@ -1,6 +1,7 @@
 """Links CRUD router."""
 
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
@@ -66,10 +67,10 @@ async def create_link(
 async def list_links(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    search: str | None = Query(None),
+    search: Optional[str] = Query(None),
     sort_by: str = Query("created_at"),
     sort_order: str = Query("desc"),
-    status: str | None = Query(None),
+    status: Optional[str] = Query(None),
     user: ClerkUser = Depends(get_current_user),
     manager: LinkManager = Depends(get_link_manager),
 ) -> dict:

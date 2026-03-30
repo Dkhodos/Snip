@@ -1,6 +1,6 @@
 """Base store with shared session management and common operations."""
 
-from __future__ import annotations
+from typing import List, Optional
 
 from snip_db.models.base import Base
 from sqlalchemy import select
@@ -35,11 +35,11 @@ class BaseStore[T: Base]:
         await self._session.refresh(entity)
         return entity
 
-    async def _get_one_or_none(self, *conditions: object) -> T | None:
+    async def _get_one_or_none(self, *conditions: object) -> Optional[T]:
         query = select(self.model).where(*conditions)
         result = await self._session.execute(query)
         return result.scalar_one_or_none()
 
-    async def _get_all(self) -> list[T]:
+    async def _get_all(self) -> List[T]:
         result = await self._session.execute(select(self.model))
         return list(result.scalars().all())
