@@ -1,0 +1,29 @@
+"""Tests for store factory dependencies."""
+
+from unittest.mock import MagicMock
+
+from dashboard_backend.dependencies import (
+    get_click_event_store,
+    get_feature_flag_store,
+    get_link_store,
+)
+from dashboard_backend.stores.click_event_store import ClickEventStore
+from dashboard_backend.stores.feature_flag_store import FeatureFlagStore
+from dashboard_backend.stores.link_store import LinkStore
+
+
+class TestStoreFactories:
+    def test_get_link_store(self) -> None:
+        session = MagicMock()
+        store = get_link_store(session)
+        assert isinstance(store, LinkStore)
+
+    def test_get_click_event_store(self) -> None:
+        session = MagicMock()
+        store = get_click_event_store(session)
+        assert isinstance(store, ClickEventStore)
+
+    def test_get_feature_flag_store(self) -> None:
+        session = MagicMock()
+        store = get_feature_flag_store(session)
+        assert isinstance(store, FeatureFlagStore)
