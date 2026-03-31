@@ -18,12 +18,13 @@
 7. [Step 4 — Networking Module](#7-step-4--networking-module)
 8. [Step 5 — Database Module](#8-step-5--database-module)
 9. [Step 6 — Secrets Module](#9-step-6--secrets-module)
-10. [Step 7 — Cloud Run Module](#10-step-7--cloud-run-module)
-11. [Step 8 — CI/CD OIDC Module](#11-step-8--cicd-oidc-module)
-12. [Step 9 — Prod (Disabled)](#12-step-9--prod-disabled)
-13. [Step 10 — Dockerfile](#13-step-10--dockerfile)
-14. [Step 11 — GitHub Actions Deploy](#14-step-11--github-actions-deploy)
-15. [Execution Order](#15-execution-order)
+10. [Step 7 — Cloud Run Backend Module](#10-step-7--cloud-run-backend-module)
+11. [Step 7b — Cloud Run Frontend Module](#11-step-7b--cloud-run-frontend-module)
+12. [Step 8 — CI/CD OIDC Module](#12-step-8--cicd-oidc-module)
+13. [Step 9 — Prod (Disabled)](#13-step-9--prod-disabled)
+14. [Step 10 — Dockerfiles](#14-step-10--dockerfiles)
+15. [Step 11 — GitHub Actions Deploy](#15-step-11--github-actions-deploy)
+16. [Execution Order](#16-execution-order)
 
 ---
 
@@ -80,7 +81,8 @@ terraform/
 │   ├── project.hcl
 │   ├── networking.hcl
 │   ├── database.hcl
-│   ├── cloud-run.hcl
+│   ├── cloud-run.hcl           # backend (FastAPI)
+│   ├── cloud-run-frontend.hcl  # frontend (nginx)
 │   ├── secrets.hcl
 │   └── ci-oidc.hcl
 │
@@ -97,7 +99,11 @@ terraform/
 │   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   └── outputs.tf
-│   ├── cloud-run/
+│   ├── cloud-run/              # backend: has Secret Manager mounts + VPC
+│   │   ├── main.tf
+│   │   ├── variables.tf
+│   │   └── outputs.tf
+│   ├── cloud-run-frontend/     # frontend: simple nginx, no secrets/VPC needed
 │   │   ├── main.tf
 │   │   ├── variables.tf
 │   │   └── outputs.tf
@@ -121,6 +127,8 @@ terraform/
     │   │   └── terragrunt.hcl
     │   ├── cloud-run/
     │   │   └── terragrunt.hcl
+    │   ├── cloud-run-frontend/
+    │   │   └── terragrunt.hcl
     │   ├── secrets/
     │   │   └── terragrunt.hcl
     │   └── ci-oidc/
@@ -134,6 +142,8 @@ terraform/
         ├── database/
         │   └── terragrunt.hcl
         ├── cloud-run/
+        │   └── terragrunt.hcl
+        ├── cloud-run-frontend/
         │   └── terragrunt.hcl
         ├── secrets/
         │   └── terragrunt.hcl
@@ -892,7 +902,7 @@ inputs = {
 
 ---
 
-## 10. Step 7 — Cloud Run Module
+## 10. Step 7 — Cloud Run Backend Module
 
 Deploys the dashboard-backend as a Cloud Run service.
 
@@ -1127,7 +1137,160 @@ inputs = {
 
 ---
 
-## 11. Step 8 — CI/CD OIDC Module
+## 11. Step 7b — Cloud Run Frontend Module
+
+Deploys the dashboard-frontend as a second Cloud Run service (nginx serving the Vite build).
+
+The frontend is **stateless** — no database access, no Secret Manager mounts, no VPC connector needed. `VITE_*` env vars are baked into the bundle at Docker build time (CI passes them as `--build-arg`).
+
+### `terraform/modules/cloud-run-frontend/variables.tf`
+
+```hcl
+variable "project_id" {
+  description = "GCP project ID"
+  type        = string
+}
+
+variable "region" {
+  description = "GCP region"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name"
+  type        = string
+}
+
+variable "image" {
+  description = "Docker image URL for the frontend nginx container"
+  type        = string
+}
+
+variable "service_account_email" {
+  description = "Cloud Run service account email"
+  type        = string
+}
+
+variable "min_instances" {
+  description = "Minimum number of instances (0 = scale to zero)"
+  type        = number
+  default     = 0
+}
+
+variable "max_instances" {
+  description = "Maximum number of instances"
+  type        = number
+  default     = 2
+}
+```
+
+### `terraform/modules/cloud-run-frontend/main.tf`
+
+```hcl
+resource "google_cloud_run_v2_service" "frontend" {
+  name     = "snip-frontend-${var.environment}"
+  location = var.region
+
+  template {
+    service_account = var.service_account_email
+
+    scaling {
+      min_instance_count = var.min_instances
+      max_instance_count = var.max_instances
+    }
+
+    # No VPC connector — nginx only serves static files, no DB access
+    containers {
+      image = var.image
+
+      ports {
+        container_port = 8080
+      }
+
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "256Mi"
+        }
+        cpu_idle = true
+      }
+    }
+  }
+
+  deletion_protection = false
+}
+
+# Public access
+resource "google_cloud_run_v2_service_iam_member" "public" {
+  name     = google_cloud_run_v2_service.frontend.name
+  location = var.region
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+```
+
+### `terraform/modules/cloud-run-frontend/outputs.tf`
+
+```hcl
+output "service_url" {
+  value = google_cloud_run_v2_service.frontend.uri
+}
+
+output "service_name" {
+  value = google_cloud_run_v2_service.frontend.name
+}
+```
+
+### `terraform/_envcommon/cloud-run-frontend.hcl`
+
+```hcl
+terraform {
+  source = "${dirname(find_in_parent_folders("terragrunt.hcl"))}//modules/cloud-run-frontend"
+}
+
+dependency "project" {
+  config_path = "../project"
+
+  mock_outputs = {
+    cloud_run_service_account_email = "mock@mock.iam.gserviceaccount.com"
+    artifact_registry_url           = "me-west1-docker.pkg.dev/mock/snip-pre-prod"
+  }
+}
+
+inputs = {
+  service_account_email = dependency.project.outputs.cloud_run_service_account_email
+}
+```
+
+### `terraform/environments/pre-prod/cloud-run-frontend/terragrunt.hcl`
+
+```hcl
+include "root" {
+  path = find_in_parent_folders("terragrunt.hcl")
+}
+
+include "envcommon" {
+  path   = "${dirname(find_in_parent_folders("terragrunt.hcl"))}/_envcommon/cloud-run-frontend.hcl"
+  expose = true
+}
+
+dependency "project" {
+  config_path = "../project"
+}
+
+inputs = {
+  # Initial image — use a placeholder until first CI/CD deploy
+  image         = "${dependency.project.outputs.artifact_registry_url}/dashboard-frontend:latest"
+  min_instances = 0
+  max_instances = 2
+}
+```
+
+> **Note:** `VITE_CLERK_PUBLISHABLE_KEY` and `VITE_API_URL` are **not** Cloud Run env vars — they are baked into the bundle by Vite during the Docker build. CI/CD passes them as `--build-arg` (see Step 11).
+
+---
+
+## 12. Step 8 — CI/CD OIDC Module
 
 Workload Identity Federation allows GitHub Actions to authenticate to GCP without long-lived service account keys.
 
@@ -1284,7 +1447,7 @@ inputs = {
 
 ---
 
-## 12. Step 9 — Prod (Disabled)
+## 13. Step 9 — Prod (Disabled)
 
 Every module in `prod/` has `skip = true`. This means `terragrunt run-all plan` in prod does nothing.
 
@@ -1306,7 +1469,7 @@ include "envcommon" {
 }
 ```
 
-Replace `MODULE_NAME` with the module name (`project`, `networking`, `database`, `cloud-run`, `secrets`, `ci-oidc`).
+Replace `MODULE_NAME` with the module name (`project`, `networking`, `database`, `cloud-run`, `cloud-run-frontend`, `secrets`, `ci-oidc`).
 
 For example, `terraform/environments/prod/database/terragrunt.hcl`:
 
@@ -1325,48 +1488,78 @@ include "envcommon" {
 
 ---
 
-## 13. Step 10 — Dockerfile
+## 14. Step 10 — Dockerfiles
 
-The backend needs a Dockerfile for Cloud Run. Create `apps/dashboard-backend/Dockerfile`:
+Both services have Dockerfiles. Build context is always the **monorepo root**.
+
+### Backend — `apps/dashboard-backend/Dockerfile` ✅ (already created)
 
 ```dockerfile
 FROM python:3.12-slim
 
-# Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
 WORKDIR /app
 
-# Copy workspace root files
 COPY pyproject.toml uv.lock ./
 
-# Copy packages
 COPY packages/db/ packages/db/
+COPY packages/email/ packages/email/
+COPY packages/auth/ packages/auth/
 
-# Copy app
 COPY apps/dashboard-backend/ apps/dashboard-backend/
 
-# Install dependencies
 RUN cd apps/dashboard-backend && uv sync --frozen --no-dev
 
-# Run with uvicorn
 CMD ["uv", "run", "--no-sync", "--directory", "apps/dashboard-backend", \
      "uvicorn", "dashboard_backend.main:app", \
      "--host", "0.0.0.0", "--port", "8080"]
 ```
 
+### Frontend — `apps/dashboard-frontend/Dockerfile` ✅ (already created)
+
+Multi-stage: Node 20 (pnpm build) → nginx:alpine (serve dist/).
+
+`VITE_CLERK_PUBLISHABLE_KEY` and `VITE_API_URL` are Docker `ARG`s — baked into the bundle by Vite at build time. CI passes them via `--build-arg` (not Cloud Run env vars).
+
+```dockerfile
+# Build stage
+FROM node:25-slim AS builder
+
+RUN corepack enable
+
+WORKDIR /app
+
+COPY apps/dashboard-frontend/package.json apps/dashboard-frontend/pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
+
+COPY apps/dashboard-frontend/ .
+
+ARG VITE_CLERK_PUBLISHABLE_KEY
+ARG VITE_API_URL
+
+RUN pnpm build
+
+# Serve stage
+FROM nginx:alpine
+
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY apps/dashboard-frontend/nginx.conf /etc/nginx/conf.d/default.conf
+
+EXPOSE 8080
+
+CMD ["nginx", "-g", "daemon off;"]
+```
+
+`apps/dashboard-frontend/nginx.conf` configures SPA routing (`try_files`), immutable asset caching, and no-cache for `index.html`.
+
 ---
 
-## 14. Step 11 — GitHub Actions Deploy
+## 15. Step 11 — GitHub Actions Deploy
 
-After Terraform is set up, update `.github/workflows/dashboard-backend.yml` to add a deploy job. The deploy job should:
+Two deploy jobs — one per service, triggered on push to `main`.
 
-1. Authenticate via OIDC (using outputs from ci-oidc module)
-2. Build Docker image
-3. Push to Artifact Registry
-4. Deploy to Cloud Run
-
-Add this job to the existing workflow (after the lint-and-test job):
+### Backend — add to `.github/workflows/dashboard-backend.yml`
 
 ```yaml
   deploy:
@@ -1376,7 +1569,7 @@ Add this job to the existing workflow (after the lint-and-test job):
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      id-token: write  # Required for OIDC
+      id-token: write
 
     env:
       PROJECT_ID: YOUR_PROJECT_ID         # <-- REPLACE
@@ -1413,9 +1606,68 @@ Add this job to the existing workflow (after the lint-and-test job):
             --quiet
 ```
 
+### Frontend — add to `.github/workflows/dashboard-frontend.yml`
+
+Note: `VITE_API_URL` is the backend Cloud Run URL (available after Terraform runs). Store both as GitHub Actions secrets.
+
+```yaml
+  deploy:
+    name: Deploy to Pre-prod
+    needs: lint-and-test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      PROJECT_ID: YOUR_PROJECT_ID         # <-- REPLACE
+      REGION: me-west1                     # <-- REPLACE if different
+      SERVICE: snip-frontend-pre-prod
+      REPO: snip-pre-prod
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool-pre-prod/providers/github-provider"  # <-- REPLACE PROJECT_NUMBER
+          service_account: "snip-ci-deploy-pre-prod@YOUR_PROJECT_ID.iam.gserviceaccount.com"  # <-- REPLACE
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-frontend:${{ github.sha }}"
+          docker build \
+            --build-arg VITE_CLERK_PUBLISHABLE_KEY="${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}" \
+            --build-arg VITE_API_URL="${{ secrets.VITE_API_URL }}" \
+            -t "$IMAGE" \
+            -f apps/dashboard-frontend/Dockerfile .
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-frontend:${{ github.sha }}"
+          gcloud run deploy ${{ env.SERVICE }} \
+            --image "$IMAGE" \
+            --region ${{ env.REGION }} \
+            --quiet
+```
+
+**GitHub Actions secrets required:**
+| Secret | Value |
+|--------|-------|
+| `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key for pre-prod |
+| `VITE_API_URL` | Backend Cloud Run URL (e.g. `https://snip-backend-pre-prod-xxxx.run.app`) |
+
 ---
 
-## 15. Execution Order
+## 16. Execution Order
 
 Run these steps **in order**. Each step must complete before the next.
 
@@ -1436,8 +1688,9 @@ cd project    && terragrunt apply && cd ..
 cd networking && terragrunt apply && cd ..
 cd database   && terragrunt apply && cd ..
 cd secrets    && terragrunt apply -var="clerk_publishable_key=pk_test_..." -var="clerk_secret_key=sk_test_..." && cd ..
-cd cloud-run  && terragrunt apply && cd ..
-cd ci-oidc    && terragrunt apply && cd ..
+cd cloud-run          && terragrunt apply && cd ..
+cd cloud-run-frontend && terragrunt apply && cd ..
+cd ci-oidc            && terragrunt apply && cd ..
 
 # 2. Verify
 terragrunt run-all output
@@ -1481,3 +1734,5 @@ Search for these before running:
 | `PROJECT_NUMBER` | GitHub Actions workflow | GCP project number (numeric, from Console) |
 | `me-west1` | Everywhere | Change if not using Israel region |
 | Clerk keys | `secrets/terragrunt.hcl` | Real Clerk keys via `-var` flags |
+| `VITE_CLERK_PUBLISHABLE_KEY` | GitHub Actions secret | Clerk publishable key for pre-prod |
+| `VITE_API_URL` | GitHub Actions secret | Backend Cloud Run URL (get from `terragrunt output` after deploy) |

@@ -10,7 +10,7 @@
 | Layer | Tool | Status |
 |---|---|---|
 | Compute | Cloud Run (Cloud Run Jobs for async) | Deferred |
-| Frontend | Vite + React + TanStack Router → Cloudflare Pages | **Done (local)** |
+| Frontend | Vite + React + TanStack Router → Cloud Run (nginx) | **Done (local)** |
 | UI | shadcn/ui (dark mode) | **Done** |
 | State | React Query (TanStack Query) | **Done** |
 | Frontend Linting | Biome | **Done** |
@@ -32,7 +32,7 @@
 | Feature Flags | Cloud SQL table (managed via Appsmith) | **Done** |
 | Error Tracking | Sentry | Deferred |
 | Email | Resend | Deferred |
-| CDN / DNS | Cloudflare Pages + Cloudflare DNS | Deferred |
+| CDN / DNS | Cloudflare DNS → Cloud Run frontend | Deferred |
 
 ---
 
