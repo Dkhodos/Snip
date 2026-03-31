@@ -25,8 +25,8 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  lint-and-test:
-    name: Lint & Test
+  ci:
+    name: Lint, Type Check & Test
     runs-on: ubuntu-latest
     permissions:
       contents: read
