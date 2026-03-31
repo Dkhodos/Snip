@@ -26,6 +26,9 @@ class BaseStore[T: Base]:
     async def flush(self) -> None:
         await self._session.flush()
 
+    async def refresh(self, entity: T) -> None:
+        await self._session.refresh(entity)
+
     # --- common helpers ---
 
     def _add(self, entity: T) -> None:

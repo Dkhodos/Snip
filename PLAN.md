@@ -14,16 +14,18 @@
 | UI | shadcn/ui (dark mode) | **Done** |
 | State | React Query (TanStack Query) | **Done** |
 | Frontend Linting | Biome | **Done** |
-| Frontend Testing | Vitest | Configured, tests TBD |
+| Frontend Type Checking | tsc | **Done** |
+| Frontend Testing | Vitest | **Done** (78+ tests) |
 | Backend | Python / FastAPI | **Done** |
 | Backend Linting | Ruff | **Done** |
-| Backend Testing | pytest | Configured, tests TBD |
+| Backend Type Checking | Pyright | **Done** |
+| Backend Testing | pytest | **Done** (99% coverage) |
 | Auth | Clerk (B2B orgs, native UI) | **Done** |
 | Operational DB | Cloud SQL (Postgres) | **Done (local)** |
 | ORM / Migrations | SQLAlchemy + Alembic | **Done** |
 | Queue | Pub/Sub | Deferred |
 | Analytics DB | BigQuery | Deferred |
-| CI/CD | GitHub Actions + OIDC | Deferred |
+| CI/CD | GitHub Actions | **Done (lint/type/test)** |
 | Secrets | Infisical → GCP Secret Manager | Deferred |
 | IaC | Terraform (state in GCS) | Deferred |
 | Back Office | Appsmith (self-hosted on Cloud Run) | Deferred |
@@ -45,7 +47,17 @@
 │   │   │       ├── __init__.py
 │   │   │       ├── main.py
 │   │   │       ├── config.py         # Pydantic Settings
-│   │   │       ├── clerk.py          # JWT validation + JWKS from publishable key
+│   │   │       ├── dependencies.py   # DI wiring (stores, managers, auth)
+│   │   │       ├── clients/
+│   │   │       │   ├── auth_client.py    # AuthClient Protocol
+│   │   │       │   ├── clerk_client.py   # Real Clerk JWT + JWKS
+│   │   │       │   └── dev_auth_client.py # Dev bypass (fixed user/org)
+│   │   │       ├── managers/
+│   │   │       │   ├── link_manager.py
+│   │   │       │   ├── clicks_manager.py
+│   │   │       │   ├── redirect_manager.py
+│   │   │       │   ├── feature_flag_manager.py
+│   │   │       │   └── seed_manager.py
 │   │   │       └── routers/
 │   │   │           ├── __init__.py
 │   │   │           ├── links.py
@@ -54,8 +66,9 @@
 │   │   │           ├── flags.py
 │   │   │           ├── stats.py
 │   │   │           └── seed.py       # Dev-only, conditionally mounted
-│   │   ├── tests/
+│   │   ├── tests/                    # 20 test files, 99% coverage
 │   │   ├── Dockerfile
+│   │   ├── Makefile
 │   │   └── pyproject.toml            # depends on "snip-db[pg]"
 │   │
 │   └── dashboard-frontend/           # Vite SPA → Cloudflare Pages
@@ -92,11 +105,13 @@
 │
 ├── packages/
 │   └── db/                           # Shared DB package (workspace member: snip-db)
-│       ├── pyproject.toml            # name = "snip-db"
+│       ├── pyproject.toml            # name = "snip-db", Pyright configured
 │       ├── alembic.ini               # script_location = src/snip_db/migrations
+│       ├── Makefile
+│       ├── tests/                    # 10 test files, 90%+ coverage
 │       └── src/
 │           └── snip_db/
-│               ├── __init__.py       # re-export engine factory + models
+│               ├── __init__.py       # re-export engine factory + models + stores
 │               ├── engine.py         # create_engine, session factory, get_session
 │               ├── models/
 │               │   ├── __init__.py   # re-export all models
@@ -104,6 +119,12 @@
 │               │   ├── link.py
 │               │   ├── click_event.py
 │               │   └── feature_flag.py
+│               ├── stores/
+│               │   ├── __init__.py
+│               │   ├── base_store.py     # Generic BaseStore[T] with session mgmt
+│               │   ├── link_store.py     # Full CRUD + search/sort/pagination
+│               │   ├── click_event_store.py  # Create + daily/aggregate queries
+│               │   └── feature_flag_store.py # Get/update + cached dict
 │               └── migrations/
 │                   ├── __init__.py
 │                   ├── env.py        # imports models, targets Base.metadata
@@ -114,8 +135,13 @@
 │   ├── docker-compose.yml            # Postgres (+ future Pub/Sub emulator)
 │   └── .env.example                  # Template for local dev secrets
 │
+├── .github/
+│   └── workflows/
+│       ├── db.yml                    # packages/db: lint + type + test
+│       ├── dashboard-backend.yml     # backend: lint + type + test
+│       └── dashboard-frontend.yml    # frontend: lint + type + test + build
 ├── terraform/                        # Deferred
-├── .github/                          # Deferred
+├── Makefile                          # Root monorepo delegation
 ├── pyproject.toml                    # uv workspace root
 ├── .gitignore
 └── PLAN.md
@@ -193,8 +219,14 @@ All use SQLAlchemy 2.0 `Mapped`/`mapped_column` style with `DeclarativeBase` + n
 ### 1.2 Engine ✅
 Module-level `_session_factory` pattern, `init_session_factory()` called during FastAPI lifespan, `get_session` async generator for `Depends()`.
 
-### 1.3 Alembic ✅
-Initial migration (autogenerate) + seed migration (3 default feature flags).
+### 1.3 Stores ✅
+Generic `BaseStore[T]` with session management. Concrete stores:
+- **LinkStore** — Full CRUD, search, sort, pagination, stats
+- **ClickEventStore** — Create, daily/aggregate queries, cleanup
+- **FeatureFlagStore** — Get/update, cached dict (60s TTL)
+
+### 1.4 Alembic ✅
+Initial migration (autogenerate) + seed migration (3 default feature flags) + `multiple_orgs` flag migration.
 
 ---
 
@@ -203,13 +235,21 @@ Initial migration (autogenerate) + seed migration (3 default feature flags).
 ### 2.1 Config (`config.py`) ✅
 Pydantic Settings: `DATABASE_URL`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, `ENVIRONMENT`.
 
-### 2.2 Clerk JWT Middleware (`clerk.py`) ✅
-- Derives JWKS URL from publishable key (base64-decodes Frontend API domain)
-- Validates Bearer token, extracts `user_id` and `org_id`
-- **Rejects 403** if `org_id` is missing (B2B requires org context)
-- Dev bypass when keys are placeholders (`sk_test_...`) → `ClerkUser(user_id="dev_user", org_id="dev_org")`
+### 2.2 Auth Client Layer ✅
+- **AuthClient Protocol** — Swappable auth abstraction
+- **ClerkClient** — Real Clerk JWT + JWKS validation, extracts `user_id` and `org_id`, rejects 403 if `org_id` missing
+- **DevAuthClient** — Dev bypass returning fixed user/org
+- Dependency injection via `dependencies.py`
 
-### 2.3 Routers ✅
+### 2.3 Manager Layer ✅
+Business logic decoupled from HTTP routing:
+- **LinkManager** — Create, list (filtering/search/sort), get, update, delete
+- **ClicksManager** — Daily and aggregate click queries
+- **RedirectManager** — Handle redirect + record click
+- **FeatureFlagManager** — Get flags with caching
+- **SeedManager** — Development data seeding
+
+### 2.4 Routers ✅
 
 | Router | Endpoints |
 |---|---|
@@ -220,8 +260,8 @@ Pydantic Settings: `DATABASE_URL`, `CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY`, 
 | **Flags** | `GET /flags` ({key: enabled} map, 60s TTL cache) |
 | **Seed** | `POST /dev/seed` (dev-only, conditionally mounted, 25 links + click events) |
 
-### 2.4 Main (`main.py`) ✅
-FastAPI app with lifespan (DB init/teardown), CORS for localhost:5173, seed router only mounted in development.
+### 2.5 Main (`main.py`) ✅
+FastAPI app with lifespan (DB init/teardown), CORS for localhost:5173, seed router only mounted in development. Health check endpoint at `GET /health`.
 
 ---
 
@@ -313,11 +353,26 @@ FastAPI app with lifespan (DB init/teardown), CORS for localhost:5173, seed rout
 
 ---
 
+## Phase 6 — GitHub Actions CI/CD ✅ (Lint/Type/Test)
+
+Three workflows with path-based triggers and `cancel-in-progress` concurrency:
+
+| Workflow | Triggers | Steps |
+|----------|----------|-------|
+| `db.yml` | `packages/db/**`, `uv.lock` | Ruff lint, Pyright, pytest |
+| `dashboard-backend.yml` | `apps/dashboard-backend/**`, `packages/db/**` | Ruff lint, Pyright, pytest |
+| `dashboard-frontend.yml` | `apps/dashboard-frontend/**` | Biome lint, tsc, Vitest, Vite build |
+
+Root `Makefile` delegates to sub-project Makefiles for unified commands.
+
+> Deployment CI (Cloud Run, Cloudflare Pages) deferred to Phase 4 (Terraform).
+
+---
+
 ## Deferred Phases (Build Later)
 
 - **Phase 4** — Terraform Infrastructure
 - **Phase 5** — Click Worker (Pub/Sub → BigQuery)
-- **Phase 6** — GitHub Actions CI/CD
 - **Phase 7** — Appsmith Back Office
 - **Phase 8** — Email (Resend)
 - **Phase 9** — Validation Checklist

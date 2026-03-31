@@ -9,6 +9,13 @@ class Settings(BaseSettings):
     clerk_secret_key: str = ""
     environment: str = "development"
 
+    email_provider: str = "mailpit"
+    resend_api_key: str = ""
+    email_from: str = "Snip <noreply@snip.dev>"
+    smtp_host: str = "localhost"
+    smtp_port: int = 1025
+    click_threshold: int = 100
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
 

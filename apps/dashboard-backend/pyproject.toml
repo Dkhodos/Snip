@@ -4,6 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [
     "snip-db[pg]",
+    "snip-email",
     "fastapi[standard]",
     "pydantic-settings",
     "httpx",
@@ -16,6 +17,7 @@ dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "aiosqlite", "
 
 [tool.uv.sources]
 snip-db = { workspace = true }
+snip-email = { workspace = true }
 
 [tool.ruff]
 target-version = "py312"

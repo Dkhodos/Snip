@@ -1,24 +1,20 @@
-name: Dashboard Backend CI
+name: Email Package CI
 
 on:
   push:
     branches: [main]
     paths:
-      - "apps/dashboard-backend/**"
-      - "packages/db/**"
       - "packages/email/**"
       - "uv.lock"
       - "pyproject.toml"
-      - ".github/workflows/dashboard-backend.yml"
+      - ".github/workflows/email.yml"
   pull_request:
     branches: [main]
     paths:
-      - "apps/dashboard-backend/**"
-      - "packages/db/**"
       - "packages/email/**"
       - "uv.lock"
       - "pyproject.toml"
-      - ".github/workflows/dashboard-backend.yml"
+      - ".github/workflows/email.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -47,10 +43,10 @@ jobs:
           python-version: "3.12"
 
       - name: Lint
-        run: make dashboard-backend:lint
+        run: make email:lint
 
       - name: Type Check
-        run: make dashboard-backend:type:check
+        run: make email:type:check
 
       - name: Unit Tests
-        run: make dashboard-backend:test:unit
+        run: make email:test:unit
