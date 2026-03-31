@@ -47,5 +47,8 @@ jobs:
       - name: Lint
         run: make dashboard-backend:lint
 
+      - name: Type Check
+        run: make dashboard-backend:type:check
+
       - name: Unit Tests
         run: make dashboard-backend:test:unit

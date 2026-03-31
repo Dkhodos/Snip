@@ -35,13 +35,14 @@ class ClerkClient:
         frontend_api = base64.b64decode(padded).decode().rstrip("$")
         return f"https://{frontend_api}/.well-known/jwks.json"
 
-    async def _get_jwks(self) -> dict:
+    async def _get_jwks(self) -> Dict:
         if self._jwks_cache is None:
             url = self._get_jwks_url()
             async with httpx.AsyncClient() as client:
                 resp = await client.get(url)
                 resp.raise_for_status()
                 self._jwks_cache = resp.json()
+        assert self._jwks_cache is not None
         return self._jwks_cache
 
     async def verify_token(self, token: str) -> ClerkUser:

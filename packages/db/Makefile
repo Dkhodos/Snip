@@ -12,6 +12,7 @@ UV           := uv
 PYTHON       := $(UV) run --package snip-db python
 PYTEST       := $(UV) run --package snip-db pytest
 RUFF         := $(UV) run --package snip-db ruff
+PYRIGHT      := $(UV) run --package snip-db pyright
 
 # Sentinel file to track when deps were last synced
 SYNC_STAMP   := $(VENV)/.snip-db-synced
@@ -24,7 +25,7 @@ TESTS        := tests
 #  Phony targets
 # ──────────────────────────────────────────────────────────────
 
-.PHONY: help venv install sync lint lint\:fix test\:unit clean
+.PHONY: help venv install sync lint lint\:fix type\:check test\:unit clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_:\\]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -55,13 +56,17 @@ sync: $(SYNC_STAMP) ## Ensure deps are up-to-date (fast no-op if nothing changed
 #  Lint
 # ──────────────────────────────────────────────────────────────
 
-lint: sync ## Run ruff linter + formatter check
+lint: sync ## Run ruff linter + formatter check + type check
 	$(RUFF) check $(SRC) $(TESTS)
 	$(RUFF) format --check $(SRC) $(TESTS)
+	$(PYRIGHT) $(SRC)
 
 lint\:fix: sync ## Auto-fix lint issues and format
 	$(RUFF) check --fix $(SRC) $(TESTS)
 	$(RUFF) format $(SRC) $(TESTS)
+
+type\:check: sync ## Run pyright type checking
+	$(PYRIGHT) $(SRC)
 
 # ──────────────────────────────────────────────────────────────
 #  Test

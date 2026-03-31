@@ -11,7 +11,7 @@ dependencies = [
 
 [project.optional-dependencies]
 pg = ["asyncpg>=0.29"]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "ruff", "aiosqlite"]
+dev = ["pytest", "pytest-asyncio", "pytest-cov", "ruff", "aiosqlite", "pyright>=1.1.400"]
 
 [build-system]
 requires = ["hatchling"]
@@ -34,6 +34,11 @@ ignore = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+exclude = ["src/snip_db/migrations", "tests"]
 
 [tool.coverage.run]
 omit = [

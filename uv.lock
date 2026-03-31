@@ -349,6 +349,7 @@ dependencies = [
 dev = [
     { name = "aiosqlite" },
     { name = "httpx" },
+    { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -362,6 +363,7 @@ requires-dist = [
     { name = "httpx" },
     { name = "httpx", marker = "extra == 'dev'" },
     { name = "pydantic-settings" },
+    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
@@ -781,6 +783,15 @@ wheels = [
 ]
 
 [[package]]
+name = "nodeenv"
+version = "1.10.0"
+source = { registry = "https://nexus.own-backup.com:8443/repository/pypi-group/simple" }
+sdist = { url = "https://nexus.own-backup.com:8443/repository/pypi-group/packages/nodeenv/1.10.0/nodeenv-1.10.0.tar.gz", hash = "sha256:996c191ad80897d076bdfba80a41994c2b47c68e224c542b48feba42ba00f8bb" }
+wheels = [
+    { url = "https://nexus.own-backup.com:8443/repository/pypi-group/packages/nodeenv/1.10.0/nodeenv-1.10.0-py2.py3-none-any.whl", hash = "sha256:5bb13e3eed2923615535339b3c620e76779af4cb4c6a90deccc9e36b274d3827" },
+]
+
+[[package]]
 name = "packaging"
 version = "26.0"
 source = { registry = "https://nexus.own-backup.com:8443/repository/pypi-group/simple" }
@@ -999,6 +1010,19 @@ source = { registry = "https://nexus.own-backup.com:8443/repository/pypi-group/s
 sdist = { url = "https://nexus.own-backup.com:8443/repository/pypi-group/packages/pygments/2.20.0/pygments-2.20.0.tar.gz", hash = "sha256:6757cd03768053ff99f3039c1a36d6c0aa0b263438fcab17520b30a303a82b5f" }
 wheels = [
     { url = "https://nexus.own-backup.com:8443/repository/pypi-group/packages/pygments/2.20.0/pygments-2.20.0-py3-none-any.whl", hash = "sha256:81a9e26dd42fd28a23a2d169d86d7ac03b46e2f8b59ed4698fb4785f946d0176" },
+]
+
+[[package]]
+name = "pyright"
+version = "1.1.408"
+source = { registry = "https://nexus.own-backup.com:8443/repository/pypi-group/simple" }
+dependencies = [
+    { name = "nodeenv" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://nexus.own-backup.com:8443/repository/pypi-group/packages/pyright/1.1.408/pyright-1.1.408.tar.gz", hash = "sha256:f28f2321f96852fa50b5829ea492f6adb0e6954568d1caa3f3af3a5f555eb684" }
+wheels = [
+    { url = "https://nexus.own-backup.com:8443/repository/pypi-group/packages/pyright/1.1.408/pyright-1.1.408-py3-none-any.whl", hash = "sha256:090b32865f4fdb1e0e6cd82bf5618480d48eecd2eb2e70f960982a3d9a4c17c1" },
 ]
 
 [[package]]
@@ -1318,6 +1342,7 @@ dependencies = [
 [package.optional-dependencies]
 dev = [
     { name = "aiosqlite" },
+    { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
@@ -1334,6 +1359,7 @@ requires-dist = [
     { name = "asyncpg", marker = "extra == 'pg'", specifier = ">=0.29" },
     { name = "greenlet", specifier = ">=3.3.2" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.1" },
+    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },

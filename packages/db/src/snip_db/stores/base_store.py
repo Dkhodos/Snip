@@ -2,7 +2,7 @@
 
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import ColumnElement, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from snip_db.models.base import Base
@@ -36,7 +36,7 @@ class BaseStore[T: Base]:
         await self._session.refresh(entity)
         return entity
 
-    async def _get_one_or_none(self, *conditions: object) -> Optional[T]:
+    async def _get_one_or_none(self, *conditions: ColumnElement[bool]) -> Optional[T]:
         query = select(self.model).where(*conditions)
         result = await self._session.execute(query)
         return result.scalar_one_or_none()

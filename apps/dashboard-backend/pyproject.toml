@@ -12,7 +12,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "aiosqlite"]
+dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "aiosqlite", "pyright>=1.1.400"]
 
 [tool.uv.sources]
 snip-db = { workspace = true }
@@ -30,6 +30,11 @@ ignore = [
     "UP035",  # Keep typing.List/Dict/Tuple imports for Python 3.12 runtime compat
     "UP045",  # Keep Optional[X] for Python 3.12 runtime compat
 ]
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "standard"
+exclude = ["tests"]
 
 [build-system]
 requires = ["hatchling"]
