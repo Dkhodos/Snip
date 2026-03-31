@@ -40,22 +40,3 @@ class InvalidSortFieldError(DomainError):
         detail = f"sort_by must be one of: {', '.join(sorted(allowed))}"
         super().__init__(detail)
         self.detail = detail
-
-
-class AuthenticationError(DomainError):
-    """Raised when authentication fails."""
-
-    def __init__(self, detail: str = "Authentication failed") -> None:
-        super().__init__(detail)
-        self.detail = detail
-
-
-class OrganizationRequiredError(DomainError):
-    """Raised when no organization is selected."""
-
-    def __init__(
-        self,
-        detail: str = "No organization selected. Please select or create an organization.",
-    ) -> None:
-        super().__init__(detail)
-        self.detail = detail

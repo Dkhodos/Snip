@@ -7,15 +7,14 @@ from typing import Dict
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from snip_auth import AuthenticationError, OrganizationRequiredError
 from snip_db.engine import create_engine, create_session_factory, init_session_factory
 
 from dashboard_backend.config import settings
 from dashboard_backend.exceptions import (
-    AuthenticationError,
     InvalidSortFieldError,
     LinkExpiredError,
     LinkNotFoundError,
-    OrganizationRequiredError,
     ShortCodeCollisionError,
 )
 from dashboard_backend.routers import clicks, flags, links, redirect, stats

@@ -5,10 +5,10 @@ requires-python = ">=3.12"
 dependencies = [
     "snip-db[pg]",
     "snip-email",
+    "snip-auth",
     "fastapi[standard]",
     "pydantic-settings",
     "httpx",
-    "python-jose[cryptography]",
     "shortuuid",
 ]
 
@@ -18,6 +18,7 @@ dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "aiosqlite", "
 [tool.uv.sources]
 snip-db = { workspace = true }
 snip-email = { workspace = true }
+snip-auth = { workspace = true }
 
 [tool.ruff]
 target-version = "py312"

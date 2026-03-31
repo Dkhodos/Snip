@@ -1,25 +1,13 @@
-"""Clerk authentication client with swappable implementations."""
+"""Clerk authentication provider."""
 
 import base64
-from dataclasses import dataclass
-from typing import Dict, Optional, Protocol
+from typing import Dict, Optional
 
 import httpx
 from jose import JWTError, jwt
 
-from dashboard_backend.exceptions import AuthenticationError, OrganizationRequiredError
-
-
-@dataclass(frozen=True)
-class ClerkUser:
-    user_id: str
-    org_id: str
-
-
-class AuthClient(Protocol):
-    """Protocol for authentication clients."""
-
-    async def verify_token(self, token: str) -> ClerkUser: ...
+from snip_auth.exceptions import AuthenticationError, OrganizationRequiredError
+from snip_auth.protocol import AuthClient, AuthUser
 
 
 class ClerkClient:
@@ -45,7 +33,7 @@ class ClerkClient:
         assert self._jwks_cache is not None
         return self._jwks_cache
 
-    async def verify_token(self, token: str) -> ClerkUser:
+    async def verify_token(self, token: str) -> AuthUser:
         try:
             jwks = await self._get_jwks()
             unverified_header = jwt.get_unverified_header(token)
@@ -74,7 +62,7 @@ class ClerkClient:
             if not org_id:
                 raise OrganizationRequiredError()
 
-            return ClerkUser(user_id=user_id, org_id=org_id)
+            return AuthUser(user_id=user_id, org_id=org_id)
 
         except (JWTError, AuthenticationError, OrganizationRequiredError):
             raise
@@ -82,8 +70,6 @@ class ClerkClient:
             raise AuthenticationError(f"Invalid token: {e}") from e
 
 
-class DevAuthClient:
-    """Dev bypass client that always returns a fixed user."""
-
-    async def verify_token(self, token: str) -> ClerkUser:
-        return ClerkUser(user_id="dev_user", org_id="dev_org")
+def _assert_implements_protocol() -> None:
+    """Compile-time check that ClerkClient satisfies AuthClient."""
+    _: AuthClient = ClerkClient(publishable_key="")  # noqa: F841

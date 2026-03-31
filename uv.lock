@@ -11,6 +11,7 @@ resolution-markers = [
 members = [
     "dashboard-backend",
     "snip",
+    "snip-auth",
     "snip-db",
     "snip-email",
 ]
@@ -423,8 +424,8 @@ dependencies = [
     { name = "fastapi", extra = ["standard"] },
     { name = "httpx" },
     { name = "pydantic-settings" },
-    { name = "python-jose", extra = ["cryptography"] },
     { name = "shortuuid" },
+    { name = "snip-auth" },
     { name = "snip-db", extra = ["pg"] },
     { name = "snip-email" },
 ]
@@ -451,9 +452,9 @@ requires-dist = [
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "python-jose", extras = ["cryptography"] },
     { name = "ruff", marker = "extra == 'dev'" },
     { name = "shortuuid" },
+    { name = "snip-auth", editable = "packages/auth" },
     { name = "snip-db", extras = ["pg"], editable = "packages/db" },
     { name = "snip-email", editable = "packages/email" },
 ]
@@ -1440,6 +1441,36 @@ wheels = [
 name = "snip"
 version = "0.1.0"
 source = { virtual = "." }
+
+[[package]]
+name = "snip-auth"
+version = "0.1.0"
+source = { editable = "packages/auth" }
+dependencies = [
+    { name = "httpx" },
+    { name = "python-jose", extra = ["cryptography"] },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "httpx" },
+    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
+    { name = "pytest-cov", marker = "extra == 'dev'" },
+    { name = "python-jose", extras = ["cryptography"] },
+    { name = "ruff", marker = "extra == 'dev'" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "snip-db"

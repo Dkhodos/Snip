@@ -1,5 +1,7 @@
 """Tests for exception handlers."""
 
+from snip_auth import AuthenticationError, OrganizationRequiredError
+
 from dashboard_backend.dependencies import (
     get_current_user,
     get_link_manager,
@@ -7,11 +9,9 @@ from dashboard_backend.dependencies import (
     get_redirect_manager,
 )
 from dashboard_backend.exceptions import (
-    AuthenticationError,
     InvalidSortFieldError,
     LinkExpiredError,
     LinkNotFoundError,
-    OrganizationRequiredError,
     ShortCodeCollisionError,
 )
 from dashboard_backend.main import app

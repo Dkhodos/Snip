@@ -1,33 +1,16 @@
-"""Tests for ClerkClient and DevAuthClient."""
+"""Tests for ClerkClient."""
 
 from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from dashboard_backend.clients.clerk_client import (
-    ClerkClient,
-    ClerkUser,
-    DevAuthClient,
-)
-from dashboard_backend.exceptions import AuthenticationError, OrganizationRequiredError
-
-
-class TestDevAuthClient:
-    async def test_always_returns_dev_user(self) -> None:
-        client = DevAuthClient()
-        user = await client.verify_token("anything")
-        assert user == ClerkUser(user_id="dev_user", org_id="dev_org")
-
-    async def test_empty_token(self) -> None:
-        client = DevAuthClient()
-        user = await client.verify_token("")
-        assert user.user_id == "dev_user"
+from snip_auth.exceptions import AuthenticationError, OrganizationRequiredError
+from snip_auth.protocol import AuthUser
+from snip_auth.providers.clerk.client import ClerkClient
 
 
 class TestClerkClient:
     def test_jwks_url_derivation(self) -> None:
-        # pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk
-        # decodes to "tidy-stinkbug-62.clerk.accounts.dev$"
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         url = client._get_jwks_url()
         assert url == "https://tidy-stinkbug-62.clerk.accounts.dev/.well-known/jwks.json"
@@ -36,7 +19,7 @@ class TestClerkClient:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("dashboard_backend.clients.clerk_client.jwt") as mock_jwt:
+        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
             mock_jwt.get_unverified_header.return_value = {"kid": "wrong_kid"}
             with pytest.raises(AuthenticationError, match="signing key"):
                 await client.verify_token("fake_token")
@@ -45,7 +28,7 @@ class TestClerkClient:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("dashboard_backend.clients.clerk_client.jwt") as mock_jwt:
+        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
             mock_jwt.get_unverified_header.return_value = {"kid": "key1"}
             mock_jwt.decode.return_value = {"sub": "", "org_id": "org1"}
             with pytest.raises(AuthenticationError, match="missing user ID"):
@@ -55,7 +38,7 @@ class TestClerkClient:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("dashboard_backend.clients.clerk_client.jwt") as mock_jwt:
+        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
             mock_jwt.get_unverified_header.return_value = {"kid": "key1"}
             mock_jwt.decode.return_value = {"sub": "user_123", "org_id": ""}
             with pytest.raises(OrganizationRequiredError):
@@ -65,11 +48,11 @@ class TestClerkClient:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("dashboard_backend.clients.clerk_client.jwt") as mock_jwt:
+        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
             mock_jwt.get_unverified_header.return_value = {"kid": "key1"}
             mock_jwt.decode.return_value = {"sub": "user_123", "org_id": "org_456"}
             user = await client.verify_token("valid_token")
-            assert user == ClerkUser(user_id="user_123", org_id="org_456")
+            assert user == AuthUser(user_id="user_123", org_id="org_456")
 
     async def test_verify_token_jwt_error(self) -> None:
         from jose import JWTError
@@ -77,9 +60,9 @@ class TestClerkClient:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("dashboard_backend.clients.clerk_client.jwt") as mock_jwt:
+        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
             mock_jwt.get_unverified_header.side_effect = JWTError("bad token")
-            mock_jwt.JWTError = JWTError  # needed for except clause
+            mock_jwt.JWTError = JWTError
             with pytest.raises(JWTError):
                 await client.verify_token("bad")
 
@@ -87,7 +70,7 @@ class TestClerkClient:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("dashboard_backend.clients.clerk_client.jwt") as mock_jwt:
+        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
             mock_jwt.get_unverified_header.return_value = {"kid": "key1"}
             mock_jwt.decode.side_effect = ValueError("something weird")
             with pytest.raises(AuthenticationError, match="something weird"):
@@ -106,12 +89,11 @@ class TestClerkClient:
         mock_http_client.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "dashboard_backend.clients.clerk_client.httpx.AsyncClient",
+            "snip_auth.providers.clerk.client.httpx.AsyncClient",
             return_value=mock_http_client,
         ):
             jwks1 = await client._get_jwks()
             jwks2 = await client._get_jwks()
 
         assert jwks1 is jwks2
-        # Only fetched once
         mock_http_client.get.assert_called_once()

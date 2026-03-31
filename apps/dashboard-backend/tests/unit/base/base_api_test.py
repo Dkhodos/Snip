@@ -20,13 +20,13 @@ from uuid import uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
+from snip_auth import AuthUser
 from snip_db.models import Link
 
-from dashboard_backend.clients.clerk_client import ClerkUser
 from dashboard_backend.dependencies import get_current_user
 from dashboard_backend.main import app
 
-TEST_USER = ClerkUser(user_id="test_user", org_id="test_org")
+TEST_USER = AuthUser(user_id="test_user", org_id="test_org")
 
 
 def make_link(**overrides: Any) -> Link:
@@ -72,7 +72,7 @@ class BaseApiTestCase:
         # Cleanup after each test
         app.dependency_overrides.clear()
 
-    def override_user(self, user: ClerkUser = TEST_USER) -> None:
+    def override_user(self, user: AuthUser = TEST_USER) -> None:
         """Override the authenticated user for this test."""
         app.dependency_overrides[get_current_user] = lambda: user
 

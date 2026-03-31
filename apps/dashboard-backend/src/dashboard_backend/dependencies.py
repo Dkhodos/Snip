@@ -1,6 +1,7 @@
 """FastAPI dependency injection wiring."""
 
 from fastapi import Depends, Request
+from snip_auth import AuthClient, AuthenticationError, AuthProvider, AuthUser, create_auth_client
 from snip_db import get_session
 from snip_db.stores.click_event_store import ClickEventStore
 from snip_db.stores.feature_flag_store import FeatureFlagStore
@@ -8,14 +9,7 @@ from snip_db.stores.link_store import LinkStore
 from snip_email import EmailClient, EmailProvider, create_email_client
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from dashboard_backend.clients.clerk_client import (
-    AuthClient,
-    ClerkClient,
-    ClerkUser,
-    DevAuthClient,
-)
 from dashboard_backend.config import settings
-from dashboard_backend.exceptions import AuthenticationError
 from dashboard_backend.managers.clicks_manager import ClicksManager
 from dashboard_backend.managers.feature_flag_manager import FeatureFlagManager
 from dashboard_backend.managers.link_manager import LinkManager
@@ -34,15 +28,15 @@ def _is_dev_bypass() -> bool:
 
 def get_auth_client() -> AuthClient:
     if _is_dev_bypass():
-        return DevAuthClient()
-    return ClerkClient(settings.clerk_publishable_key)
+        return create_auth_client(AuthProvider.DEV)
+    return create_auth_client(AuthProvider.CLERK, publishable_key=settings.clerk_publishable_key)
 
 
 async def get_current_user(
     request: Request,
     auth_client: AuthClient = Depends(get_auth_client),
-) -> ClerkUser:
-    if isinstance(auth_client, DevAuthClient):
+) -> AuthUser:
+    if _is_dev_bypass():
         return await auth_client.verify_token("")
 
     auth_header = request.headers.get("Authorization", "")

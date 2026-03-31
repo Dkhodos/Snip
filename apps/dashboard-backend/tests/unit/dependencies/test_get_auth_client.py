@@ -2,7 +2,9 @@
 
 from unittest.mock import patch
 
-from dashboard_backend.clients.clerk_client import ClerkClient, DevAuthClient
+from snip_auth.providers.clerk.client import ClerkClient
+from snip_auth.providers.dev.client import DevAuthClient
+
 from dashboard_backend.dependencies import get_auth_client
 
 
