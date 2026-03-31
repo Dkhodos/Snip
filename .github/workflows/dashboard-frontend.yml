@@ -1,0 +1,52 @@
+name: Dashboard Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/dashboard-frontend/**"
+      - ".github/workflows/dashboard-frontend.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/dashboard-frontend/**"
+      - ".github/workflows/dashboard-frontend.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  lint-and-test:
+    name: Lint, Type-check, Test & Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: apps/dashboard-frontend/pnpm-lock.yaml
+
+      - name: Lint
+        run: make dashboard-frontend:lint
+
+      - name: Type-check
+        run: make dashboard-frontend:type-check
+
+      - name: Test
+        run: make dashboard-frontend:test
+
+      - name: Build
+        run: make dashboard-frontend:build
