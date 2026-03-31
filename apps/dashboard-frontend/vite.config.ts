@@ -1,22 +1,37 @@
+import path from "node:path";
 import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
-import path from "node:path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  plugins: [TanStackRouterVite(), react()],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
-    },
-  },
-  server: {
-    proxy: {
-      "/api": {
-        target: "http://localhost:8080",
-        changeOrigin: true,
-        rewrite: (p) => p.replace(/^\/api/, ""),
-      },
-    },
-  },
+	plugins: [TanStackRouterVite(), react()],
+	resolve: {
+		alias: {
+			"@": path.resolve(__dirname, "./src"),
+		},
+	},
+	build: {
+		rollupOptions: {
+			output: {
+				manualChunks: {
+					router: ["@tanstack/react-router", "@tanstack/react-query"],
+					ui: [
+						"@radix-ui/react-dialog",
+						"@radix-ui/react-dropdown-menu",
+						"@radix-ui/react-alert-dialog",
+					],
+					charts: ["recharts"],
+				},
+			},
+		},
+	},
+	server: {
+		proxy: {
+			"/api": {
+				target: "http://localhost:8080",
+				changeOrigin: true,
+				rewrite: (p) => p.replace(/^\/api/, ""),
+			},
+		},
+	},
 });
