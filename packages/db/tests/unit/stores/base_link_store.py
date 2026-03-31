@@ -1,6 +1,6 @@
 """Shared helpers for LinkStore tests."""
 
-from dashboard_backend.stores.link_store import LinkStore
+from snip_db.stores.link_store import LinkStore
 
 
 async def create_link(store: LinkStore, **overrides) -> object:

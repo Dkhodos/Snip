@@ -3,8 +3,8 @@
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from dashboard_backend.stores.click_event_store import ClickEventStore
-from dashboard_backend.stores.link_store import LinkStore
+from snip_db.stores.click_event_store import ClickEventStore
+from snip_db.stores.link_store import LinkStore
 
 
 async def make_link(session) -> object:

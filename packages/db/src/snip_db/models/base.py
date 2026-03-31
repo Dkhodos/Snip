@@ -1,10 +1,7 @@
 """Declarative base with naming conventions."""
 
-from datetime import datetime
-from uuid import UUID, uuid4
-
 from sqlalchemy import MetaData
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase
 
 NAMING_CONVENTION = {
     "ix": "ix_%(table_name)s_%(column_0_N_name)s",

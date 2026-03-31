@@ -1,8 +1,9 @@
 """Tests for SeedManager."""
 
+from snip_db.stores.click_event_store import ClickEventStore
+from snip_db.stores.link_store import LinkStore
+
 from dashboard_backend.managers.seed_manager import SeedManager
-from dashboard_backend.stores.click_event_store import ClickEventStore
-from dashboard_backend.stores.link_store import LinkStore
 from tests.unit.base.base_test_case import BaseDBTestCase
 
 

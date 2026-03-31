@@ -2,6 +2,9 @@
 
 from fastapi import Depends, Request
 from snip_db import get_session
+from snip_db.stores.click_event_store import ClickEventStore
+from snip_db.stores.feature_flag_store import FeatureFlagStore
+from snip_db.stores.link_store import LinkStore
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dashboard_backend.clients.clerk_client import (
@@ -17,9 +20,6 @@ from dashboard_backend.managers.feature_flag_manager import FeatureFlagManager
 from dashboard_backend.managers.link_manager import LinkManager
 from dashboard_backend.managers.redirect_manager import RedirectManager
 from dashboard_backend.managers.seed_manager import SeedManager
-from dashboard_backend.stores.click_event_store import ClickEventStore
-from dashboard_backend.stores.feature_flag_store import FeatureFlagStore
-from dashboard_backend.stores.link_store import LinkStore
 
 # --- Auth client ---
 

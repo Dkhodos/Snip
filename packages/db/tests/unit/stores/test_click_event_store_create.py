@@ -3,7 +3,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-from dashboard_backend.stores.click_event_store import ClickEventStore
+from snip_db.stores.click_event_store import ClickEventStore
 from tests.unit.base.base_test_case import BaseDBTestCase
 from tests.unit.stores.base_click_event import make_link
 

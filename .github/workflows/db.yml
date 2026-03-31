@@ -1,0 +1,49 @@
+name: DB Package CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "packages/db/**"
+      - "uv.lock"
+      - "pyproject.toml"
+      - ".github/workflows/db.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/db/**"
+      - "uv.lock"
+      - "pyproject.toml"
+      - ".github/workflows/db.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_SYSTEM_PYTHON: 1
+  FORCE_COLOR: 1
+
+jobs:
+  lint-and-test:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Lint
+        run: make db:lint
+
+      - name: Unit Tests
+        run: make db:test:unit

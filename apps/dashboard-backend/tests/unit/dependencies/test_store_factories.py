@@ -2,14 +2,15 @@
 
 from unittest.mock import MagicMock
 
+from snip_db.stores.click_event_store import ClickEventStore
+from snip_db.stores.feature_flag_store import FeatureFlagStore
+from snip_db.stores.link_store import LinkStore
+
 from dashboard_backend.dependencies import (
     get_click_event_store,
     get_feature_flag_store,
     get_link_store,
 )
-from dashboard_backend.stores.click_event_store import ClickEventStore
-from dashboard_backend.stores.feature_flag_store import FeatureFlagStore
-from dashboard_backend.stores.link_store import LinkStore
 
 
 class TestStoreFactories:

@@ -4,10 +4,10 @@ from datetime import datetime
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from snip_db.models import Link
 from sqlalchemy import delete, func, select
 
-from dashboard_backend.stores.base_store import BaseStore
+from snip_db.models import Link
+from snip_db.stores.base_store import BaseStore
 
 
 class LinkStore(BaseStore[Link]):

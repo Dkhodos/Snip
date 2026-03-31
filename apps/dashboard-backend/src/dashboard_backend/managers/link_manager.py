@@ -4,13 +4,13 @@ from typing import List, Optional, Tuple
 
 import shortuuid
 from snip_db.models import Link
+from snip_db.stores.link_store import LinkStore
 
 from dashboard_backend.exceptions import (
     InvalidSortFieldError,
     LinkNotFoundError,
     ShortCodeCollisionError,
 )
-from dashboard_backend.stores.link_store import LinkStore
 
 ALLOWED_SORT_FIELDS = {"created_at", "click_count", "title"}
 

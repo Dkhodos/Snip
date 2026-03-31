@@ -3,7 +3,7 @@
 import time
 from typing import Dict, Optional
 
-from dashboard_backend.stores.feature_flag_store import FeatureFlagStore
+from snip_db.stores.feature_flag_store import FeatureFlagStore
 
 _CACHE_TTL = 60.0
 

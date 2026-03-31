@@ -2,9 +2,10 @@
 
 from typing import List, Optional
 
-from snip_db.models.base import Base
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from snip_db.models.base import Base
 
 
 class BaseStore[T: Base]:

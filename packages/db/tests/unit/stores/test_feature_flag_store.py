@@ -1,8 +1,7 @@
 """Tests for FeatureFlagStore."""
 
 from snip_db.models import FeatureFlag
-
-from dashboard_backend.stores.feature_flag_store import FeatureFlagStore
+from snip_db.stores.feature_flag_store import FeatureFlagStore
 from tests.unit.base.base_test_case import BaseDBTestCase
 
 
