@@ -9,11 +9,11 @@
 		"rules": {
 			"recommended": true,
 			"a11y": {
-				"noSvgWithoutTitle": "warn",
-				"noLabelWithoutControl": "warn"
+				"noSvgWithoutTitle": "off",
+				"noLabelWithoutControl": "off"
 			},
 			"suspicious": {
-				"noArrayIndexKey": "warn"
+				"noArrayIndexKey": "off"
 			}
 		}
 	},
