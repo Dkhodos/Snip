@@ -29,6 +29,15 @@ resource "google_cloud_run_v2_service" "frontend" {
   }
 
   deletion_protection = false
+
+  # Image is managed by CI deploy workflow, not Terraform
+  lifecycle {
+    ignore_changes = [
+      client,
+      client_version,
+      template[0].containers[0].image,
+    ]
+  }
 }
 
 # Public access
