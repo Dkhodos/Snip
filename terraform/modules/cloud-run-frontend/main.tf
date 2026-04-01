@@ -1,0 +1,40 @@
+resource "google_cloud_run_v2_service" "frontend" {
+  name     = "snip-frontend-${var.environment}"
+  location = var.region
+
+  template {
+    service_account = var.service_account_email
+
+    scaling {
+      min_instance_count = var.min_instances
+      max_instance_count = var.max_instances
+    }
+
+    # No VPC access — nginx only serves static files, no DB access
+    containers {
+      image = var.image
+
+      ports {
+        container_port = 8080
+      }
+
+      resources {
+        limits = {
+          cpu    = "1"
+          memory = "256Mi"
+        }
+        cpu_idle = true
+      }
+    }
+  }
+
+  deletion_protection = false
+}
+
+# Public access
+resource "google_cloud_run_v2_service_iam_member" "public" {
+  name     = google_cloud_run_v2_service.frontend.name
+  location = var.region
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}

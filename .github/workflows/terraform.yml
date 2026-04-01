@@ -1,0 +1,72 @@
+name: Terraform CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "terraform/**"
+      - ".github/workflows/terraform.yml"
+
+concurrency:
+  group: terraform-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  TF_VERSION: "1.9.8"
+  TG_VERSION: "0.86.2"
+
+jobs:
+  # TODO: Re-enable plan job once CI/CD is verified working
+  # plan:
+  #   name: Terraform Plan
+  #   runs-on: ubuntu-latest
+  #   if: github.event_name == 'pull_request'
+  #   ...
+
+  apply:
+    name: Terraform Apply
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: pre-prod
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      WORKING_DIR: terraform/environments/${{ vars.ENVIRONMENT }}
+      TF_VAR_clerk_publishable_key: ${{ secrets.TF_VAR_clerk_publishable_key }}
+      TF_VAR_clerk_secret_key: ${{ secrets.TF_VAR_clerk_secret_key }}
+      TF_VAR_resend_api_key: ${{ secrets.TF_VAR_resend_api_key }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool-${{ vars.ENVIRONMENT }}/providers/github-provider"
+          service_account: "snip-terraform-ci-${{ vars.ENVIRONMENT }}@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Install Terragrunt
+        run: |
+          curl -sL "https://github.com/gruntwork-io/terragrunt/releases/download/v${TG_VERSION}/terragrunt_linux_amd64" \
+            -o /usr/local/bin/terragrunt
+          chmod +x /usr/local/bin/terragrunt
+
+      - name: Terragrunt Init
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terragrunt run-all init --non-interactive
+
+      - name: Terragrunt Apply
+        working-directory: ${{ env.WORKING_DIR }}
+        run: terragrunt run-all apply --non-interactive -auto-approve

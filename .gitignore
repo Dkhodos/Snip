@@ -20,10 +20,13 @@ dist/
 .env.*.local
 
 # Terraform
-.terraform/
-*.tfstate
-*.tfstate.*
-.terraform.lock.hcl
+terraform/**/.terraform/
+terraform/**/*.tfstate
+terraform/**/*.tfstate.backup
+terraform/**/.terragrunt-cache/
+terraform/**/*.tfvars
+!terraform/**/*.tfvars.example
+terraform/bootstrap/terraform.tfstate*
 
 # IDE
 .vscode/

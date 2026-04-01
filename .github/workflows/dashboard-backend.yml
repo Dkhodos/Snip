@@ -54,3 +54,47 @@ jobs:
 
       - name: Unit Tests
         run: make dashboard-backend:test:unit
+
+  deploy:
+    name: Deploy to Pre-prod
+    needs: ci
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: ${{ vars.GCP_REGION }}
+      SERVICE: snip-backend-${{ vars.ENVIRONMENT }}
+      REPO: snip-${{ vars.ENVIRONMENT }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool-${{ vars.ENVIRONMENT }}/providers/github-provider"
+          service_account: "snip-ci-deploy-${{ vars.ENVIRONMENT }}@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+
+      - uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-backend:${{ github.sha }}"
+          docker build -t "$IMAGE" -f apps/dashboard-backend/Dockerfile .
+          docker push "$IMAGE"
+
+      - name: Deploy to Cloud Run
+        run: |
+          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-backend:${{ github.sha }}"
+          gcloud run deploy ${{ env.SERVICE }} \
+            --image "$IMAGE" \
+            --region ${{ env.REGION }} \
+            --quiet
