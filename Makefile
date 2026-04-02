@@ -17,7 +17,8 @@ PROJECTS := \
 	dashboard-frontend:apps/dashboard-frontend \
 	db:packages/db \
 	email:packages/email \
-	auth:packages/auth
+	auth:packages/auth \
+	logger:packages/logger
 
 # Lookup helper: $(call project_dir,<name>) → directory path
 project_dir = $(patsubst $(1):%,%,$(filter $(1):%,$(PROJECTS)))
