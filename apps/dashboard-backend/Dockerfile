@@ -12,6 +12,7 @@ COPY pyproject.toml uv.lock ./
 COPY packages/db/ packages/db/
 COPY packages/email/ packages/email/
 COPY packages/auth/ packages/auth/
+COPY packages/logger/ packages/logger/
 
 # Copy the app
 COPY apps/dashboard-backend/ apps/dashboard-backend/
