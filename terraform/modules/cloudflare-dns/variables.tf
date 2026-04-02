@@ -1,10 +1,10 @@
 variable "project_id" {
-  description = "GCP project ID (passed by root.hcl, unused)"
+  description = "GCP project ID"
   type        = string
 }
 
 variable "region" {
-  description = "GCP region (passed by root.hcl, unused)"
+  description = "GCP region"
   type        = string
 }
 
@@ -23,12 +23,12 @@ variable "domain" {
   type        = string
 }
 
-variable "frontend_origin_host" {
-  description = "Cloud Run frontend .run.app hostname (without https://)"
+variable "frontend_service_name" {
+  description = "Cloud Run frontend service name"
   type        = string
 }
 
-variable "backend_origin_host" {
-  description = "Cloud Run backend .run.app hostname (without https://)"
+variable "backend_service_name" {
+  description = "Cloud Run backend service name"
   type        = string
 }
