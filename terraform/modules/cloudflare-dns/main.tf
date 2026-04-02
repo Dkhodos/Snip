@@ -1,7 +1,3 @@
-provider "cloudflare" {
-  # Reads CLOUDFLARE_API_TOKEN from environment automatically
-}
-
 locals {
   frontend_subdomain = "app.${var.environment}"
   backend_subdomain  = "api.${var.environment}"

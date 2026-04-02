@@ -7,6 +7,37 @@ include "envcommon" {
   expose = true
 }
 
+# Override the generated provider block to include both google and cloudflare
+generate "provider" {
+  path      = "provider.tf"
+  if_exists = "overwrite_terragrunt"
+  contents  = <<EOF
+terraform {
+  required_version = ">= 1.9"
+
+  required_providers {
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.0"
+    }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "~> 5.0"
+    }
+  }
+}
+
+provider "google" {
+  project = var.project_id
+  region  = var.region
+}
+
+provider "cloudflare" {
+  # Reads CLOUDFLARE_API_TOKEN from environment
+}
+EOF
+}
+
 dependency "cloud_run" {
   config_path = "../cloud-run"
 
