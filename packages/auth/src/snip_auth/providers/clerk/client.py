@@ -1,6 +1,7 @@
 """Clerk authentication provider."""
 
 import base64
+import logging
 from typing import Dict, Optional
 
 import httpx
@@ -8,6 +9,8 @@ from jose import JWTError, jwt
 
 from snip_auth.exceptions import AuthenticationError, OrganizationRequiredError
 from snip_auth.protocol import AuthClient, AuthUser
+
+_log = logging.getLogger(__name__)
 
 
 class ClerkClient:
@@ -30,6 +33,7 @@ class ClerkClient:
                 resp = await client.get(url)
                 resp.raise_for_status()
                 self._jwks_cache = resp.json()
+            _log.info("jwks_fetched url=%s", self._get_jwks_url())
         assert self._jwks_cache is not None
         return self._jwks_cache
 
@@ -62,6 +66,7 @@ class ClerkClient:
             if not org_id:
                 raise OrganizationRequiredError()
 
+            _log.info("token_verified user_id=%s org_id=%s", user_id, org_id)
             return AuthUser(user_id=user_id, org_id=org_id)
 
         except (JWTError, AuthenticationError, OrganizationRequiredError):

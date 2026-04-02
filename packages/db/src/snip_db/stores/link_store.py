@@ -1,5 +1,6 @@
 """Link data access store."""
 
+import logging
 from datetime import datetime
 from typing import List, Optional, Tuple
 from uuid import UUID
@@ -8,6 +9,8 @@ from sqlalchemy import delete, func, select
 
 from snip_db.models import Link
 from snip_db.stores.base_store import BaseStore
+
+_log = logging.getLogger(__name__)
 
 
 class LinkStore(BaseStore[Link]):
@@ -45,7 +48,9 @@ class LinkStore(BaseStore[Link]):
 
         link = Link(**kwargs)
         self._add(link)
-        return await self._flush_and_refresh(link)
+        await self._flush_and_refresh(link)
+        _log.info("link_created short_code=%s org_id=%s", short_code, org_id)
+        return link
 
     async def get_by_id(self, link_id: UUID, org_id: str) -> Optional[Link]:
         return await self._get_one_or_none(Link.id == link_id, Link.org_id == org_id)
@@ -101,15 +106,19 @@ class LinkStore(BaseStore[Link]):
     async def update(self, link: Link, **fields: object) -> Link:
         for field, value in fields.items():
             setattr(link, field, value)
-        return await self._flush_and_refresh(link)
+        result = await self._flush_and_refresh(link)
+        _log.info("link_updated link_id=%s fields=%s", link.id, list(fields.keys()))
+        return result
 
     async def soft_delete(self, link: Link) -> None:
         link.is_active = False
         await self.flush()
+        _log.info("link_soft_deleted link_id=%s", link.id)
 
     async def increment_click_count(self, link: Link) -> None:
         link.click_count = Link.click_count + 1  # type: ignore[assignment]
         await self.flush()
+        _log.debug("click_count_incremented link_id=%s", link.id)
 
     async def get_stats(self, org_id: str) -> dict:
         base = select(Link).where(Link.org_id == org_id)

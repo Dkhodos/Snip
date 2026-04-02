@@ -7,6 +7,9 @@ from uuid import uuid4
 import shortuuid
 from snip_db.stores.click_event_store import ClickEventStore
 from snip_db.stores.link_store import LinkStore
+from snip_logger import get_logger
+
+_log = get_logger("dashboard-backend", log_prefix="SeedManager")
 
 SAMPLE_TITLES = [
     "Marketing Campaign Q1",
@@ -89,6 +92,7 @@ class SeedManager:
         self._click_event_store = click_event_store
 
     async def seed(self, org_id: str) -> dict:
+        _log.info("seed_started", org_id=org_id)
         now = datetime.utcnow()
 
         # Delete existing dev data (click_events first due to FK constraint)
@@ -131,5 +135,6 @@ class SeedManager:
                 )
 
         await self._link_store.commit()
+        _log.info("seed_completed", org_id=org_id, links_created=25)
 
         return {"message": "Seeded 25 links with click events", "links_created": 25}

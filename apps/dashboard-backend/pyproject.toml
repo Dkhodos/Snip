@@ -6,6 +6,7 @@ dependencies = [
     "snip-db[pg]",
     "snip-email",
     "snip-auth",
+    "snip-logger",
     "fastapi[standard]",
     "pydantic-settings",
     "httpx",
@@ -19,6 +20,7 @@ dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "aiosqlite", "
 snip-db = { workspace = true }
 snip-email = { workspace = true }
 snip-auth = { workspace = true }
+snip-logger = { workspace = true }
 
 [tool.ruff]
 target-version = "py312"

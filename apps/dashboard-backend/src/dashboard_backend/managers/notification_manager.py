@@ -1,12 +1,12 @@
 """Notification business logic manager."""
 
-import logging
 from typing import Dict, Optional
 
 import httpx
 from snip_email import EmailClient, EmailMessage
+from snip_logger import get_logger
 
-logger = logging.getLogger(__name__)
+_log = get_logger("dashboard-backend", log_prefix="NotificationManager")
 
 _CLICK_NOTIFICATION_FLAG = "click_notifications"
 
@@ -39,12 +39,12 @@ class NotificationManager:
             return
 
         if not created_by:
-            logger.warning("Link /%s has no creator, skipping notification", short_code)
+            _log.warning("no_creator_for_link", short_code=short_code)
             return
 
         email = await self._get_user_email(created_by)
         if not email:
-            logger.warning("Could not resolve email for user %s", created_by)
+            _log.warning("email_not_resolved", user_id=created_by)
             return
 
         message = EmailMessage(
@@ -55,8 +55,9 @@ class NotificationManager:
 
         try:
             await self._email_client.send(message)
+            _log.info("click_threshold_email_sent", short_code=short_code, to=email)
         except Exception:
-            logger.exception("Failed to send click threshold email for /%s", short_code)
+            _log.exception("click_threshold_email_failed", short_code=short_code)
 
     async def _get_user_email(self, user_id: str) -> Optional[str]:
         """Fetch user email from Clerk Backend API."""
@@ -77,7 +78,7 @@ class NotificationManager:
                 addrs = data.get("email_addresses", [])
                 return addrs[0]["email_address"] if addrs else None
         except Exception:
-            logger.exception("Failed to fetch email for Clerk user %s", user_id)
+            _log.exception("clerk_email_fetch_failed", user_id=user_id)
             return None
 
     @staticmethod

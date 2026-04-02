@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from snip_auth import AuthenticationError, OrganizationRequiredError
 from snip_db.engine import create_engine, create_session_factory, init_session_factory
+from snip_logger import configure_logging, logging_middleware
 
 from dashboard_backend.config import settings
 from dashboard_backend.exceptions import (
@@ -23,6 +24,7 @@ from dashboard_backend.routers import clicks, flags, links, redirect, stats
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan: set up and tear down DB engine."""
+    configure_logging(is_local=settings.environment == "development")
     engine = create_engine(settings.database_url)
     session_factory = create_session_factory(engine)
     init_session_factory(session_factory)
@@ -33,6 +35,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 app = FastAPI(title="Snip Dashboard API", version="0.1.0", lifespan=lifespan)
+
+# Logging middleware (outermost — registered first so it wraps everything)
+app.middleware("http")(logging_middleware)
 
 # CORS
 app.add_middleware(

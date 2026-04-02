@@ -13,7 +13,7 @@ class DevEmailClient:
 
     async def send(self, message: EmailMessage) -> Optional[str]:
         logger.info(
-            "DEV EMAIL | to=%s subject=%s",
+            "email_sent provider=dev to=%s subject=%s",
             message.to,
             message.subject,
         )

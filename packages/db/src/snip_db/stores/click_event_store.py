@@ -1,5 +1,6 @@
 """Click event data access store."""
 
+import logging
 from datetime import datetime
 from typing import Dict, List, Optional
 from uuid import UUID
@@ -8,6 +9,8 @@ from sqlalchemy import delete, func, select
 
 from snip_db.models import ClickEvent, Link
 from snip_db.stores.base_store import BaseStore
+
+_log = logging.getLogger(__name__)
 
 
 class ClickEventStore(BaseStore[ClickEvent]):
@@ -34,6 +37,7 @@ class ClickEventStore(BaseStore[ClickEvent]):
         event = ClickEvent(**kwargs)
         self._add(event)
         await self.flush()
+        _log.debug("click_event_created link_id=%s", link_id)
         return event
 
     async def get_daily_clicks_for_link(self, link_id: UUID, since: datetime) -> List[Dict]:
@@ -66,3 +70,4 @@ class ClickEventStore(BaseStore[ClickEvent]):
     async def delete_by_link_ids(self, link_ids: List[UUID]) -> None:
         if link_ids:
             await self._session.execute(delete(ClickEvent).where(ClickEvent.link_id.in_(link_ids)))
+            _log.info("click_events_deleted count=%d", len(link_ids))

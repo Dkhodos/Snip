@@ -5,12 +5,15 @@ from typing import List, Optional, Tuple
 import shortuuid
 from snip_db.models import Link
 from snip_db.stores.link_store import LinkStore
+from snip_logger import get_logger
 
 from dashboard_backend.exceptions import (
     InvalidSortFieldError,
     LinkNotFoundError,
     ShortCodeCollisionError,
 )
+
+_log = get_logger("dashboard-backend", log_prefix="LinkManager")
 
 ALLOWED_SORT_FIELDS = {"created_at", "click_count", "title"}
 
@@ -42,6 +45,7 @@ class LinkManager:
             created_by=user_id,
         )
         await self._link_store.commit()
+        _log.info("link_created", short_code=short_code, org_id=org_id, link_id=str(link.id))
         return link
 
     async def list_links(
@@ -78,12 +82,14 @@ class LinkManager:
         link = await self.get_link(link_id, org_id)
         updated = await self._link_store.update(link, **fields)
         await self._link_store.commit()
+        _log.info("link_updated", link_id=str(link_id), fields=list(fields.keys()))
         return updated
 
     async def delete_link(self, link_id: object, org_id: str) -> None:
         link = await self.get_link(link_id, org_id)
         await self._link_store.soft_delete(link)
         await self._link_store.commit()
+        _log.info("link_deleted", link_id=str(link_id), org_id=org_id)
 
     async def get_stats(self, org_id: str) -> dict:
         return await self._link_store.get_stats(org_id)

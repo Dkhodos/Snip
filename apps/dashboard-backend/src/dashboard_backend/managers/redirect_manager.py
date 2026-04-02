@@ -6,8 +6,11 @@ from typing import Optional
 
 from snip_db.stores.click_event_store import ClickEventStore
 from snip_db.stores.link_store import LinkStore
+from snip_logger import get_logger
 
 from dashboard_backend.exceptions import LinkExpiredError, LinkNotFoundError
+
+_log = get_logger("dashboard-backend", log_prefix="RedirectManager")
 
 
 @dataclass(frozen=True)
@@ -35,8 +38,10 @@ class RedirectManager:
         await self._link_store.commit()
         await self._link_store.refresh(link)
 
-        return RedirectResult(
+        result = RedirectResult(
             target_url=link.target_url,
             click_count=link.click_count,
             created_by=link.created_by,
         )
+        _log.info("redirect_resolved", short_code=short_code, click_count=result.click_count)
+        return result

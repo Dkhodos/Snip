@@ -45,7 +45,7 @@ class MailpitClient:
             port=self._port,
             use_tls=False,
         )
-        logger.info("Mailpit email sent to=%s subject=%s", message.to, message.subject)
+        logger.info("email_sent provider=mailpit to=%s subject=%s", message.to, message.subject)
         return None
 
 
