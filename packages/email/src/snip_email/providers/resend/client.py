@@ -27,7 +27,12 @@ class ResendClient:
         }
         response: Any = await resend.Emails.send_async(params)
         email_id = response["id"] if response else None
-        _log.info("email_sent provider=resend to=%s subject=%s id=%s", message.to, message.subject, email_id)
+        _log.info(
+            "email_sent provider=resend to=%s subject=%s id=%s",
+            message.to,
+            message.subject,
+            email_id,
+        )
         return email_id
 
 
