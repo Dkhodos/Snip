@@ -20,8 +20,9 @@ COPY apps/dashboard-backend/ apps/dashboard-backend/
 # Install production dependencies only
 RUN cd apps/dashboard-backend && uv sync --frozen --no-dev
 
-# Run with uvicorn
-CMD ["uv", "run", "--no-sync", "--directory", "apps/dashboard-backend", \
-     "uvicorn", "dashboard_backend.main:app", \
-     "--host", "0.0.0.0", "--port", "8080"]
+# Copy entrypoint script (runs migrations then starts uvicorn)
+COPY apps/dashboard-backend/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+CMD ["/app/entrypoint.sh"]
 
