@@ -1,0 +1,90 @@
+repos:
+  - repo: local
+    hooks:
+
+      # ── Python packages: lint (ruff check + format + pyright) ──
+      - id: lint-snip-auth
+        name: "lint: snip-auth"
+        entry: make auth:lint
+        language: system
+        files: ^packages/auth/.*\.py$
+        pass_filenames: false
+
+      - id: lint-snip-db
+        name: "lint: snip-db"
+        entry: make db:lint
+        language: system
+        files: ^packages/db/.*\.py$
+        pass_filenames: false
+
+      - id: lint-snip-email
+        name: "lint: snip-email"
+        entry: make email:lint
+        language: system
+        files: ^packages/email/.*\.py$
+        pass_filenames: false
+
+      - id: lint-snip-logger
+        name: "lint: snip-logger"
+        entry: make logger:lint
+        language: system
+        files: ^packages/logger/.*\.py$
+        pass_filenames: false
+
+      - id: lint-dashboard-backend
+        name: "lint: dashboard-backend"
+        entry: make dashboard-backend:lint
+        language: system
+        files: ^apps/dashboard-backend/.*\.py$
+        pass_filenames: false
+
+      # ── Python packages: type check (pyright) ──────────────────
+      - id: typecheck-snip-auth
+        name: "type-check: snip-auth"
+        entry: make auth:type:check
+        language: system
+        files: ^packages/auth/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-snip-db
+        name: "type-check: snip-db"
+        entry: make db:type:check
+        language: system
+        files: ^packages/db/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-snip-email
+        name: "type-check: snip-email"
+        entry: make email:type:check
+        language: system
+        files: ^packages/email/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-snip-logger
+        name: "type-check: snip-logger"
+        entry: make logger:type:check
+        language: system
+        files: ^packages/logger/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-dashboard-backend
+        name: "type-check: dashboard-backend"
+        entry: make dashboard-backend:type:check
+        language: system
+        files: ^apps/dashboard-backend/.*\.py$
+        pass_filenames: false
+
+      # ── Frontend ───────────────────────────────────────────────
+      - id: lint-dashboard-frontend
+        name: "lint: dashboard-frontend"
+        entry: make dashboard-frontend:lint
+        language: system
+        files: ^apps/dashboard-frontend/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: typecheck-dashboard-frontend
+        name: "type-check: dashboard-frontend"
+        entry: make dashboard-frontend:type-check
+        language: system
+        files: ^apps/dashboard-frontend/.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
