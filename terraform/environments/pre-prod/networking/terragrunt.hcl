@@ -14,3 +14,7 @@ dependency "project" {
     api_services = []
   }
 }
+
+inputs = {
+  subnet_cidr = "10.1.0.0/24"
+}

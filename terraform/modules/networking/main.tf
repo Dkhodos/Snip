@@ -7,7 +7,7 @@ resource "google_compute_network" "vpc" {
 # Subnet
 resource "google_compute_subnetwork" "subnet" {
   name          = "snip-subnet-${var.environment}"
-  ip_cidr_range = "10.0.0.0/24"
+  ip_cidr_range = var.subnet_cidr
   region        = var.region
   network       = google_compute_network.vpc.id
 }
