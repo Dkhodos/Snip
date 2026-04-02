@@ -34,25 +34,24 @@ resource "cloudflare_ruleset" "origin_rules" {
   kind        = "zone"
   phase       = "http_request_origin"
 
-  rules {
-    action      = "route"
-    description = "Frontend: ${local.frontend_fqdn} -> ${var.frontend_origin_host}"
-    enabled     = true
-    expression  = "(http.host eq \"${local.frontend_fqdn}\")"
-
-    action_parameters {
-      host_header = var.frontend_origin_host
-    }
-  }
-
-  rules {
-    action      = "route"
-    description = "Backend: ${local.backend_fqdn} -> ${var.backend_origin_host}"
-    enabled     = true
-    expression  = "(http.host eq \"${local.backend_fqdn}\")"
-
-    action_parameters {
-      host_header = var.backend_origin_host
-    }
-  }
+  rules = [
+    {
+      action      = "route"
+      description = "Frontend: ${local.frontend_fqdn} -> ${var.frontend_origin_host}"
+      enabled     = true
+      expression  = "(http.host eq \"${local.frontend_fqdn}\")"
+      action_parameters = {
+        host_header = var.frontend_origin_host
+      }
+    },
+    {
+      action      = "route"
+      description = "Backend: ${local.backend_fqdn} -> ${var.backend_origin_host}"
+      enabled     = true
+      expression  = "(http.host eq \"${local.backend_fqdn}\")"
+      action_parameters = {
+        host_header = var.backend_origin_host
+      }
+    },
+  ]
 }
