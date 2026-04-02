@@ -6,7 +6,7 @@ resource "random_password" "db_password" {
 
 # Cloud SQL instance
 resource "google_sql_database_instance" "postgres" {
-  name             = "snip-db-${var.environment}"
+  name             = "snip-db-${var.environment}-${var.region}"
   database_version = "POSTGRES_15"
   region           = var.region
 
