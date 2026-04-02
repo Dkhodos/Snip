@@ -47,4 +47,5 @@ inputs = {
   clerk_publishable_secret_id = dependency.secrets.outputs.clerk_publishable_secret_id
   clerk_secret_secret_id      = dependency.secrets.outputs.clerk_secret_secret_id
   resend_api_key_secret_id    = dependency.secrets.outputs.resend_api_key_secret_id
+  allowed_origins             = "https://app.pre-prod.snip-app.win,http://localhost:5173"
 }

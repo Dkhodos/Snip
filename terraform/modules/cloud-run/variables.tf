@@ -71,6 +71,12 @@ variable "click_threshold" {
   default     = 100
 }
 
+variable "allowed_origins" {
+  description = "Comma-separated list of allowed CORS origins"
+  type        = string
+  default     = "http://localhost:5173"
+}
+
 variable "min_instances" {
   description = "Minimum number of instances (0 = scale to zero)"
   type        = number

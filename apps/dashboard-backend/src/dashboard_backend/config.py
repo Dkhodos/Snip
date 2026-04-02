@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     smtp_host: str = "localhost"
     smtp_port: int = 1025
     click_threshold: int = 100
+    allowed_origins: str = "http://localhost:5173"
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 

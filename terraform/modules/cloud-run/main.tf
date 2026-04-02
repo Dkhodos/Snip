@@ -94,6 +94,11 @@ resource "google_cloud_run_v2_service" "backend" {
         name  = "CLICK_THRESHOLD"
         value = tostring(var.click_threshold)
       }
+
+      env {
+        name  = "ALLOWED_ORIGINS"
+        value = var.allowed_origins
+      }
     }
   }
 
