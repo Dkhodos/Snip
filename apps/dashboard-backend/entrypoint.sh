@@ -2,10 +2,10 @@
 set -e
 
 echo "Running Alembic migrations..."
-cd /app
-uv run --no-sync --directory packages/db \
-  alembic -c packages/db/alembic.ini upgrade head
+cd /app/packages/db
+uv run --no-sync alembic upgrade head
 echo "Migrations complete."
+cd /app
 
 echo "Starting uvicorn..."
 exec uv run --no-sync --directory apps/dashboard-backend \
