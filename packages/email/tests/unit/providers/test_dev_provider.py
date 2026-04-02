@@ -33,7 +33,7 @@ class TestDevEmailClient:
         with caplog.at_level(logging.INFO):
             await client.send(message)
 
-        assert "DEV EMAIL" in caplog.text
+        assert "email_sent" in caplog.text
         assert "user@example.com" in caplog.text
         assert "Test Subject" in caplog.text
 

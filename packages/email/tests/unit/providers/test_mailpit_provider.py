@@ -38,7 +38,7 @@ class TestMailpitClient:
         ):
             await client.send(message)
 
-        assert "Mailpit email sent" in caplog.text
+        assert "email_sent" in caplog.text
 
     async def test_send_with_multiple_recipients(self) -> None:
         client = MailpitClient(from_email="test@snip.dev")
