@@ -6,6 +6,18 @@ resource "google_cloud_run_v2_job" "this" {
     template {
       service_account = var.service_account_email
 
+      # Direct VPC Egress — only when VPC config is provided
+      dynamic "vpc_access" {
+        for_each = var.vpc_id != null ? [1] : []
+        content {
+          network_interfaces {
+            network    = var.vpc_id
+            subnetwork = var.subnet_id
+          }
+          egress = "PRIVATE_RANGES_ONLY"
+        }
+      }
+
       containers {
         image = var.image
 

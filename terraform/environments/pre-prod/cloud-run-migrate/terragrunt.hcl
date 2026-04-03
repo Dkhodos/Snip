@@ -16,6 +16,15 @@ dependency "project" {
   }
 }
 
+dependency "networking" {
+  config_path = "../networking"
+
+  mock_outputs = {
+    vpc_id    = "projects/snip-491719/global/networks/snip-vpc-pre-prod"
+    subnet_id = "projects/snip-491719/regions/me-west1/subnetworks/snip-subnet-pre-prod"
+  }
+}
+
 dependency "secrets" {
   config_path = "../secrets"
 
@@ -28,6 +37,8 @@ inputs = {
   job_name              = "migrate"
   image                 = "gcr.io/cloudrun/hello"
   service_account_email = dependency.project.outputs.cloud_run_service_account_email
+  vpc_id                = dependency.networking.outputs.vpc_id
+  subnet_id             = dependency.networking.outputs.subnet_id
 
   secret_env_vars = {
     DATABASE_URL = dependency.secrets.outputs.database_url_secret_id

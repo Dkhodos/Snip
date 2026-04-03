@@ -40,6 +40,18 @@ variable "memory" {
   default     = "512Mi"
 }
 
+variable "vpc_id" {
+  description = "VPC network ID for Direct VPC Egress (null = disabled)"
+  type        = string
+  default     = null
+}
+
+variable "subnet_id" {
+  description = "Subnet ID for Direct VPC Egress (required when vpc_id is set)"
+  type        = string
+  default     = null
+}
+
 variable "env_vars" {
   description = "Plain environment variables (name → value)"
   type        = map(string)
