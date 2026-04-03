@@ -29,6 +29,12 @@ Current environments: `pre-prod`
 | `snip-resend-api-key-{env}` | env | Cloud Run backend (runtime) |
 | `snip-cloudflare-api-token` | global | Terraform CI (Cloudflare provider) |
 
+## Architecture
+
+Terraform creates and owns the secret **containers** and **IAM bindings**. Secret **values** are always set externally via `gcloud`. Cloud Run references secrets using `secret_key_ref` with `version = "latest"`, so new values are picked up on the next container start without Terraform changes.
+
+**Flow:** Terraform (container + IAM) → `gcloud` (value) → Cloud Run (reads at startup via env var)
+
 ## Commands
 
 ### List all Snip secrets
@@ -41,40 +47,6 @@ gcloud secrets list --project=snip-491719 --filter="name:snip-"
 gcloud secrets versions access latest \
   --secret=snip-clerk-publishable-pre-prod \
   --project=snip-491719
-```
-
-### Create a new env-specific secret
-```bash
-# 1. Create the container
-gcloud secrets create snip-{name}-{env} \
-  --replication-policy=automatic \
-  --project=snip-491719
-
-# 2. Set the initial value
-echo -n "VALUE" | gcloud secrets versions add snip-{name}-{env} \
-  --data-file=- \
-  --project=snip-491719
-
-# 3. Register it in Terraform so the container and IAM are managed
-# Add "snip-{name}-{env}" to local.env_secret_names in:
-#   terraform/modules/secrets/main.tf
-```
-
-### Create a new global secret
-```bash
-# 1. Create the container
-gcloud secrets create snip-{name} \
-  --replication-policy=automatic \
-  --project=snip-491719
-
-# 2. Set the initial value
-echo -n "VALUE" | gcloud secrets versions add snip-{name} \
-  --data-file=- \
-  --project=snip-491719
-
-# 3. Register it in Terraform
-# Add "snip-{name}" to local.global_secret_names in:
-#   terraform/modules/secrets/main.tf
 ```
 
 ### Rotate a secret value
@@ -102,13 +74,90 @@ gcloud secrets versions disable {version-number} \
 
 ## Adding a New Secret End-to-End
 
-1. **Create and populate in GCP** (commands above)
-2. **Register container in Terraform** — add the name to `local.env_secret_names` or `local.global_secret_names` in `terraform/modules/secrets/main.tf`
-3. **Grant access if needed** — Cloud Run SA access is automatic for all env secrets. For CI workflows, add a `get-secretmanager-secrets` step referencing `projects/snip-491719/secrets/{name}/versions/latest`
-4. **Reference in Cloud Run** — add a `secret_env_var` or mount in `terraform/modules/cloud-run/main.tf`
+All secret containers are created by Terraform, not `gcloud`. Follow these steps:
+
+### 1. Register the container in Terraform
+
+Add the secret name to `terraform/modules/secrets/main.tf`:
+- **Env-specific:** add `"snip-{name}-${var.environment}"` to `local.env_secret_names`
+- **Global:** add `"snip-{name}"` to `local.global_secret_names`
+
+This creates the Secret Manager container and grants `secretAccessor` to the Cloud Run SA automatically (for env secrets).
+
+### 2. Export the secret ID from the secrets module
+
+Add an output in `terraform/modules/secrets/outputs.tf`:
+```terraform
+output "{name}_secret_id" {
+  value = google_secret_manager_secret.secrets["snip-{name}-${var.environment}"].secret_id
+}
+```
+
+### 3. Wire it into the Cloud Run module
+
+**a)** Add a variable in `terraform/modules/cloud-run/variables.tf`:
+```terraform
+variable "{name}_secret_id" {
+  description = "Secret Manager secret ID for {ENV_VAR_NAME}"
+  type        = string
+}
+```
+
+**b)** Add an `env` block in `terraform/modules/cloud-run/main.tf` inside `containers {}`:
+```terraform
+env {
+  name = "{ENV_VAR_NAME}"
+  value_source {
+    secret_key_ref {
+      secret  = var.{name}_secret_id
+      version = "latest"
+    }
+  }
+}
+```
+
+### 4. Pass the secret ID through terragrunt
+
+In each `terraform/environments/{env}/cloud-run/terragrunt.hcl`, add:
+```hcl
+{name}_secret_id = dependency.secrets.outputs.{name}_secret_id
+```
+
+### 5. Apply Terraform and set the value
+
+```bash
+# Apply to create the container and IAM bindings
+cd terraform/environments/{env}/secrets && terragrunt apply
+cd terraform/environments/{env}/cloud-run && terragrunt apply
+
+# Set the initial value via gcloud
+echo -n "VALUE" | gcloud secrets versions add snip-{name}-{env} \
+  --data-file=- \
+  --project=snip-491719
+```
+
+### 6. Add the setting to the backend app
+
+Add the field to `apps/dashboard-backend/src/dashboard_backend/config.py`:
+```python
+class Settings(BaseSettings):
+    {name}: str = ""  # loaded from {ENV_VAR_NAME} env var
+```
+
+Pydantic `BaseSettings` auto-reads matching env vars (case-insensitive). In local dev, set it in `.env`.
+
+## Adding a Plain (Non-Secret) Environment Variable
+
+For config that isn't sensitive (no Secret Manager needed):
+
+1. Add a `variable` in `terraform/modules/cloud-run/variables.tf` with a default
+2. Add a plain `env { name = "..." value = var.{name} }` block in `cloud-run/main.tf`
+3. Pass the value in `terragrunt.hcl` inputs (or rely on the default)
+4. Add the field to `config.py`
 
 ## Important Rules
 
+- **Terraform creates secret containers** — never create them via `gcloud secrets create`
 - **Never set secret values via Terraform** — Terraform only manages containers and IAM
 - **Never commit secret values** — use `echo -n` piped to `gcloud`, never write to a file first
 - **Global secrets have no env suffix** — they are shared and rotated once for all environments
