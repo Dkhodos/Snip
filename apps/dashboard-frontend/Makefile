@@ -5,6 +5,7 @@
 # ──────────────────────────────────────────────────────────────
 
 SHELL        := /bin/bash
+ROOT         := $(shell git rev-parse --show-toplevel)
 PNPM         := pnpm
 
 # Sentinel file to track when deps were last installed
@@ -17,7 +18,7 @@ SRC          := src
 #  Phony targets
 # ──────────────────────────────────────────────────────────────
 
-.PHONY: help install sync lint lint\:fix type-check test build clean
+.PHONY: help install sync lint lint\:fix type-check test build clean build-image deploy
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_:\\-]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -78,3 +79,31 @@ build: sync ## Build for production
 clean: ## Remove caches and build artifacts
 	rm -rf dist node_modules/.vite
 	rm -f $(SYNC_STAMP)
+
+# ──────────────────────────────────────────────────────────────
+#  Docker / Cloud Run
+#
+#  Required variables (pass on command line or export to env):
+#    IMAGE    — full image ref, e.g. us-docker.pkg.dev/project/repo/dashboard-frontend:sha
+#    SERVICE  — Cloud Run service name, e.g. snip-frontend-pre-prod
+#    REGION   — GCP region, e.g. europe-west1
+#
+#  Optional (baked into the Vite bundle at build time):
+#    VITE_CLERK_PUBLISHABLE_KEY
+#    VITE_API_URL
+# ──────────────────────────────────────────────────────────────
+
+build-image: ## Build and push Docker image (requires IMAGE; optionally VITE_CLERK_PUBLISHABLE_KEY, VITE_API_URL)
+	docker build \
+		--build-arg VITE_CLERK_PUBLISHABLE_KEY="$(VITE_CLERK_PUBLISHABLE_KEY)" \
+		--build-arg VITE_API_URL="$(VITE_API_URL)" \
+		-t "$(IMAGE)" \
+		-f apps/dashboard-frontend/Dockerfile \
+		$(ROOT)
+	docker push "$(IMAGE)"
+
+deploy: ## Deploy image to Cloud Run (requires IMAGE, SERVICE, REGION)
+	gcloud run deploy $(SERVICE) \
+		--image "$(IMAGE)" \
+		--region $(REGION) \
+		--quiet

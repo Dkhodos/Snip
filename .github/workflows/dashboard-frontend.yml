@@ -88,18 +88,14 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-frontend:${{ github.sha }}"
-          docker build \
-            --build-arg VITE_CLERK_PUBLISHABLE_KEY="${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}" \
-            --build-arg VITE_API_URL="${{ secrets.VITE_API_URL }}" \
-            -t "$IMAGE" \
-            -f apps/dashboard-frontend/Dockerfile .
-          docker push "$IMAGE"
+          make dashboard-frontend:build-image \
+            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-frontend:${{ github.sha }}" \
+            VITE_CLERK_PUBLISHABLE_KEY="${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}" \
+            VITE_API_URL="${{ secrets.VITE_API_URL }}"
 
       - name: Deploy to Cloud Run
         run: |
-          IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-frontend:${{ github.sha }}"
-          gcloud run deploy ${{ env.SERVICE }} \
-            --image "$IMAGE" \
-            --region ${{ env.REGION }} \
-            --quiet
+          make dashboard-frontend:deploy \
+            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-frontend:${{ github.sha }}" \
+            SERVICE="${{ env.SERVICE }}" \
+            REGION="${{ env.REGION }}"
