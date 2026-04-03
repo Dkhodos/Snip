@@ -37,3 +37,6 @@ terraform/bootstrap/terraform.tfstate*
 # OS
 .DS_Store
 Thumbs.db
+
+# claude
+.claude/settings.local.jsons
