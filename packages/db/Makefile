@@ -85,11 +85,12 @@ test\:unit: sync ## Run unit tests with coverage report
 
 IMAGE ?= snip-migrate:latest
 
-build-image: ## Build the migration Docker image (IMAGE=... to override tag)
+build-image: ## Build and push migration Docker image (requires IMAGE)
 	docker build \
 		-f $(ROOT)/packages/db/Dockerfile \
 		-t $(IMAGE) \
 		$(ROOT)
+	docker push "$(IMAGE)"
 
 # ──────────────────────────────────────────────────────────────
 #  Cleanup
