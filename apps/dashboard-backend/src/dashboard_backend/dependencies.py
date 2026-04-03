@@ -14,7 +14,6 @@ from dashboard_backend.managers.clicks_manager import ClicksManager
 from dashboard_backend.managers.feature_flag_manager import FeatureFlagManager
 from dashboard_backend.managers.link_manager import LinkManager
 from dashboard_backend.managers.notification_manager import NotificationManager
-from dashboard_backend.managers.redirect_manager import RedirectManager
 from dashboard_backend.managers.seed_manager import SeedManager
 
 # --- Auth client ---
@@ -75,13 +74,6 @@ def get_link_manager(
     link_store: LinkStore = Depends(get_link_store),
 ) -> LinkManager:
     return LinkManager(link_store)
-
-
-def get_redirect_manager(
-    link_store: LinkStore = Depends(get_link_store),
-    click_event_store: ClickEventStore = Depends(get_click_event_store),
-) -> RedirectManager:
-    return RedirectManager(link_store, click_event_store)
 
 
 def get_clicks_manager(

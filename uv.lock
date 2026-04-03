@@ -9,7 +9,9 @@ resolution-markers = [
 
 [manifest]
 members = [
+    "click-worker",
     "dashboard-backend",
+    "redirect-service",
     "snip",
     "snip-analytics",
     "snip-auth",
@@ -272,6 +274,44 @@ sdist = { url = "https://files.pythonhosted.org/packages/3d/fa/656b739db8587d7b5
 wheels = [
     { url = "https://files.pythonhosted.org/packages/98/78/01c019cdb5d6498122777c1a43056ebb3ebfeef2076d9d026bfe15583b2b/click-8.3.1-py3-none-any.whl", hash = "sha256:981153a64e25f12d547d3426c367a4857371575ee7ad18df2a6183ab0545b2a6", size = 108274, upload-time = "2025-11-15T20:45:41.139Z" },
 ]
+
+[[package]]
+name = "click-worker"
+version = "0.1.0"
+source = { editable = "apps/click-worker" }
+dependencies = [
+    { name = "fastapi", extra = ["standard"] },
+    { name = "pydantic-settings" },
+    { name = "snip-analytics" },
+    { name = "snip-logger" },
+    { name = "snip-queue" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "httpx" },
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi", extras = ["standard"] },
+    { name = "httpx", marker = "extra == 'dev'" },
+    { name = "pydantic-settings" },
+    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
+    { name = "pytest-cov", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
+    { name = "snip-analytics", editable = "packages/analytics" },
+    { name = "snip-logger", editable = "packages/logger" },
+    { name = "snip-queue", editable = "packages/queue" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "colorama"
@@ -1551,6 +1591,46 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/f0/7a/1c7270340330e575b92f397352af856a8c06f230aa3e76f86b39d01b416a/pyyaml-6.0.3-cp314-cp314t-win_amd64.whl", hash = "sha256:4ad1906908f2f5ae4e5a8ddfce73c320c2a1429ec52eafd27138b7f1cbe341c9", size = 174062, upload-time = "2025-09-25T21:32:55.767Z" },
     { url = "https://files.pythonhosted.org/packages/f1/12/de94a39c2ef588c7e6455cfbe7343d3b2dc9d6b6b2f40c4c6565744c873d/pyyaml-6.0.3-cp314-cp314t-win_arm64.whl", hash = "sha256:ebc55a14a21cb14062aa4162f906cd962b28e2e9ea38f9b4391244cd8de4ae0b", size = 149341, upload-time = "2025-09-25T21:32:56.828Z" },
 ]
+
+[[package]]
+name = "redirect-service"
+version = "0.1.0"
+source = { editable = "apps/redirect-service" }
+dependencies = [
+    { name = "fastapi", extra = ["standard"] },
+    { name = "pydantic-settings" },
+    { name = "snip-db", extra = ["pg"] },
+    { name = "snip-logger" },
+    { name = "snip-queue" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "aiosqlite" },
+    { name = "httpx" },
+    { name = "pyright" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiosqlite", marker = "extra == 'dev'" },
+    { name = "fastapi", extras = ["standard"] },
+    { name = "httpx", marker = "extra == 'dev'" },
+    { name = "pydantic-settings" },
+    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
+    { name = "pytest", marker = "extra == 'dev'" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
+    { name = "pytest-cov", marker = "extra == 'dev'" },
+    { name = "ruff", marker = "extra == 'dev'" },
+    { name = "snip-db", extras = ["pg"], editable = "packages/db" },
+    { name = "snip-logger", editable = "packages/logger" },
+    { name = "snip-queue", editable = "packages/queue" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "requests"

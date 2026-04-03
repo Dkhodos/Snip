@@ -14,11 +14,10 @@ from snip_logger import configure_logging, logging_middleware
 from dashboard_backend.config import settings
 from dashboard_backend.exceptions import (
     InvalidSortFieldError,
-    LinkExpiredError,
     LinkNotFoundError,
     ShortCodeCollisionError,
 )
-from dashboard_backend.routers import clicks, flags, links, redirect, stats
+from dashboard_backend.routers import clicks, flags, links, stats
 
 
 @asynccontextmanager
@@ -69,11 +68,6 @@ async def link_not_found_handler(request: Request, exc: LinkNotFoundError) -> JS
     return JSONResponse(status_code=404, content={"detail": exc.detail})
 
 
-@app.exception_handler(LinkExpiredError)
-async def link_expired_handler(request: Request, exc: LinkExpiredError) -> JSONResponse:
-    return JSONResponse(status_code=410, content={"detail": exc.detail})
-
-
 @app.exception_handler(ShortCodeCollisionError)
 async def short_code_collision_handler(
     request: Request, exc: ShortCodeCollisionError
@@ -88,7 +82,6 @@ async def invalid_sort_field_handler(request: Request, exc: InvalidSortFieldErro
 
 # Routers
 app.include_router(links.router)
-app.include_router(redirect.router)
 app.include_router(clicks.router)
 app.include_router(flags.router)
 app.include_router(stats.router)

@@ -17,14 +17,6 @@ class LinkNotFoundError(DomainError):
         self.detail = detail
 
 
-class LinkExpiredError(DomainError):
-    """Raised when a link has expired."""
-
-    def __init__(self, detail: str = "Link has expired") -> None:
-        super().__init__(detail)
-        self.detail = detail
-
-
 class ShortCodeCollisionError(DomainError):
     """Raised when a short code already exists."""
 
