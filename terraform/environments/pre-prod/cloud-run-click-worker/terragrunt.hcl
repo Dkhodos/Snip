@@ -25,6 +25,9 @@ inputs = {
   public                = false
   service_account_email = dependency.project.outputs.cloud_run_service_account_email
 
+  # Allow Pub/Sub push to invoke this service
+  invoker_service_accounts = [dependency.project.outputs.cloud_run_service_account_email]
+
   # No VPC needed — click-worker has no database access
 
   env_vars = {

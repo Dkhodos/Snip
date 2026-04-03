@@ -97,3 +97,9 @@ variable "public" {
   type        = bool
   default     = true
 }
+
+variable "invoker_service_accounts" {
+  description = "Service account emails granted roles/run.invoker (e.g. for Pub/Sub push)"
+  type        = list(string)
+  default     = []
+}

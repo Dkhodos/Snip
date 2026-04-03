@@ -83,3 +83,12 @@ resource "google_cloud_run_v2_service_iam_member" "public" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+# Grant specific service accounts invoker access (e.g. for Pub/Sub push)
+resource "google_cloud_run_v2_service_iam_member" "invoker" {
+  count    = length(var.invoker_service_accounts)
+  name     = google_cloud_run_v2_service.this.name
+  location = var.region
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${var.invoker_service_accounts[count.index]}"
+}
