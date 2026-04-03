@@ -47,13 +47,12 @@ function AuthenticatedLayout() {
 	}
 
 	return (
-		<>
-			<AuthTokenSync />
+		<AuthTokenSync fallback={<FullPageLoader />}>
 			<OrgGuard>
 				<FeatureFlagProvider>
 					<AppShell />
 				</FeatureFlagProvider>
 			</OrgGuard>
-		</>
+		</AuthTokenSync>
 	);
 }

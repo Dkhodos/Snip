@@ -1,13 +1,22 @@
 import { setAuthToken } from "@/lib/api";
 import { useAuth, useOrganization } from "@clerk/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
 
-export function AuthTokenSync() {
+interface AuthTokenSyncProps {
+	children: ReactNode;
+	fallback?: ReactNode;
+}
+
+export function AuthTokenSync({
+	children,
+	fallback = null,
+}: AuthTokenSyncProps) {
 	const { getToken } = useAuth();
 	const { organization } = useOrganization();
 	const queryClient = useQueryClient();
 	const prevOrgId = useRef<string | null>(null);
+	const [ready, setReady] = useState(false);
 
 	const orgId = organization?.id ?? null;
 
@@ -18,6 +27,7 @@ export function AuthTokenSync() {
 			const token = await getToken({ skipCache: true });
 			if (mounted) {
 				setAuthToken(token);
+				setReady(true);
 			}
 		}
 
@@ -37,5 +47,9 @@ export function AuthTokenSync() {
 		};
 	}, [getToken, orgId, queryClient]);
 
-	return null;
+	if (!ready) {
+		return <>{fallback}</>;
+	}
+
+	return <>{children}</>;
 }
