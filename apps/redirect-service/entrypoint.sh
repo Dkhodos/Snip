@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cd /app/apps/redirect-service
+# Migrations are handled by dashboard-backend — redirect-service only reads.
 
-# Run migrations (shared DB)
-uv run alembic -c ../../packages/db/alembic.ini upgrade head
-
-# Start server
-exec uv run uvicorn redirect_service.main:app --host 0.0.0.0 --port 8080
+echo "Starting uvicorn..."
+exec uv run --no-sync --directory /app/apps/redirect-service \
+  uvicorn redirect_service.main:app --host 0.0.0.0 --port 8080
