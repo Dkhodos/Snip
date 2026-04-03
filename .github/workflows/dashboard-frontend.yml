@@ -61,6 +61,7 @@ jobs:
     permissions:
       contents: read
       id-token: write
+      actions: read
 
     env:
       PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
@@ -70,6 +71,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
+
+      - name: Wait for Terraform (if triggered)
+        uses: ./.github/actions/wait-for-terraform
 
       - id: auth
         uses: google-github-actions/auth@v2.1.13
