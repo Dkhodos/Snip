@@ -1,6 +1,7 @@
 import { DEV_MODE } from "@/lib/dev-mode";
 import { Settings } from "lucide-react";
 import { OrgGeneralSettings } from "./components/OrgGeneralSettings";
+import { OrgImageUpload } from "./components/OrgImageUpload";
 import { OrgMembers } from "./components/OrgMembers";
 
 export function SettingsPage() {
@@ -17,6 +18,7 @@ export function SettingsPage() {
 					</div>
 				) : (
 					<>
+						<OrgImageUpload />
 						<OrgGeneralSettings />
 						<OrgMembers />
 					</>
