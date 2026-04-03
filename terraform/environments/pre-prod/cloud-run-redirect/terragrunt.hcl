@@ -44,7 +44,7 @@ dependency "queue" {
 inputs = {
   service_name          = "redirect"
   image                 = "gcr.io/cloudrun/hello"
-  memory                = "256Mi"
+  memory                = "512Mi"
   min_instances         = 0
   max_instances         = 2
   service_account_email = dependency.project.outputs.cloud_run_service_account_email

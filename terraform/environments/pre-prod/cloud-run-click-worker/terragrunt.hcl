@@ -19,7 +19,7 @@ dependency "project" {
 inputs = {
   service_name          = "click-worker"
   image                 = "gcr.io/cloudrun/hello"
-  memory                = "256Mi"
+  memory                = "512Mi"
   min_instances         = 0
   max_instances         = 2
   public                = false
