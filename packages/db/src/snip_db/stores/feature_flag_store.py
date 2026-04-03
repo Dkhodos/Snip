@@ -14,5 +14,5 @@ class FeatureFlagStore(BaseStore[FeatureFlag]):
 
     async def get_all(self) -> List[FeatureFlag]:
         flags = await self._get_all()
-        _log.debug("feature_flags_fetched count=%d", len(flags))
+        _log.debug(f"feature_flags_fetched count={len(flags)}")
         return flags

@@ -49,7 +49,7 @@ class LinkStore(BaseStore[Link]):
         link = Link(**kwargs)
         self._add(link)
         await self._flush_and_refresh(link)
-        _log.info("link_created short_code=%s org_id=%s", short_code, org_id)
+        _log.info(f"link_created short_code={short_code} org_id={org_id}")
         return link
 
     async def get_by_id(self, link_id: UUID, org_id: str) -> Optional[Link]:
@@ -107,18 +107,18 @@ class LinkStore(BaseStore[Link]):
         for field, value in fields.items():
             setattr(link, field, value)
         result = await self._flush_and_refresh(link)
-        _log.info("link_updated link_id=%s fields=%s", link.id, list(fields.keys()))
+        _log.info(f"link_updated link_id={link.id} fields={list(fields.keys())}")
         return result
 
     async def soft_delete(self, link: Link) -> None:
         link.is_active = False
         await self.flush()
-        _log.info("link_soft_deleted link_id=%s", link.id)
+        _log.info(f"link_soft_deleted link_id={link.id}")
 
     async def increment_click_count(self, link: Link) -> None:
         link.click_count = Link.click_count + 1  # type: ignore[assignment]
         await self.flush()
-        _log.debug("click_count_incremented link_id=%s", link.id)
+        _log.debug(f"click_count_incremented link_id={link.id}")
 
     async def get_stats(self, org_id: str) -> dict:
         base = select(Link).where(Link.org_id == org_id)

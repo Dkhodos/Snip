@@ -25,10 +25,10 @@ class BigQueryAnalyticsClient:
         """Insert a click event via streaming insert."""
         errors = self._client.insert_rows_json(self._full_table_id, [event.to_bq_row()])
         if errors:
-            _log.error("bigquery_insert_error table=%s errors=%s", self._full_table_id, errors)
+            _log.error(f"bigquery_insert_error table={self._full_table_id} errors={errors}")
             msg = f"BigQuery insert failed: {errors}"
             raise RuntimeError(msg)
-        _log.info("click_event_inserted table=%s event_id=%s", self._full_table_id, event.event_id)
+        _log.info(f"click_event_inserted table={self._full_table_id} event_id={event.event_id}")
 
     async def get_daily_clicks_for_link(
         self, link_id: str, *, days: int = 7

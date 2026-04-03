@@ -27,7 +27,7 @@ class GcpPubSubPublisher:
         topic_path = self._client.topic_path(self._project_id, topic)
         future = self._client.publish(topic_path, data, **(attributes or {}))
         message_id = future.result()
-        _log.info("message_published topic=%s message_id=%s", topic, message_id)
+        _log.info(f"message_published topic={topic} message_id={message_id}")
         return message_id
 
 
