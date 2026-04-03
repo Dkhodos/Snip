@@ -15,10 +15,14 @@ SHELL := /bin/bash
 PROJECTS := \
 	dashboard-backend:apps/dashboard-backend \
 	dashboard-frontend:apps/dashboard-frontend \
+	redirect-service:apps/redirect-service \
+	click-worker:apps/click-worker \
 	db:packages/db \
 	email:packages/email \
 	auth:packages/auth \
-	logger:packages/logger
+	logger:packages/logger \
+	queue:packages/queue \
+	analytics:packages/analytics
 
 # Lookup helper: $(call project_dir,<name>) → directory path
 project_dir = $(patsubst $(1):%,%,$(filter $(1):%,$(PROJECTS)))
