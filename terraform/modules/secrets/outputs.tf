@@ -13,3 +13,7 @@ output "clerk_secret_secret_id" {
 output "resend_api_key_secret_id" {
   value = google_secret_manager_secret.secrets["snip-resend-api-key-${var.environment}"].secret_id
 }
+
+output "cloudflare_secret_id" {
+  value = google_secret_manager_secret.global_secrets["snip-cloudflare-api-token"].secret_id
+}

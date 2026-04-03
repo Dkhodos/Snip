@@ -34,10 +34,6 @@ jobs:
 
     env:
       WORKING_DIR: terraform/environments/${{ vars.ENVIRONMENT }}
-      TF_VAR_clerk_publishable_key: ${{ secrets.TF_VAR_clerk_publishable_key }}
-      TF_VAR_clerk_secret_key: ${{ secrets.TF_VAR_clerk_secret_key }}
-      TF_VAR_resend_api_key: ${{ secrets.TF_VAR_resend_api_key }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DNS_API_TOKEN }}
 
     steps:
       - uses: actions/checkout@v6.0.2
@@ -47,6 +43,12 @@ jobs:
         with:
           workload_identity_provider: "projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool-${{ vars.ENVIRONMENT }}/providers/github-provider"
           service_account: "snip-terraform-ci-${{ vars.ENVIRONMENT }}@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+
+      - id: secrets
+        uses: google-github-actions/get-secretmanager-secrets@v2
+        with:
+          secrets: |-
+            CLOUDFLARE_API_TOKEN:projects/${{ vars.GCP_PROJECT_ID }}/secrets/snip-cloudflare-api-token/versions/latest
 
       - uses: hashicorp/setup-terraform@v3.1.2
         with:
@@ -69,6 +71,8 @@ jobs:
         run: |
           terragrunt plan --all --non-interactive -no-color 2>&1 | tee plan_output.txt
         continue-on-error: true
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ steps.secrets.outputs.CLOUDFLARE_API_TOKEN }}
 
       - name: Post Plan to PR
         uses: actions/github-script@v7
@@ -102,10 +106,6 @@ jobs:
 
     env:
       WORKING_DIR: terraform/environments/${{ vars.ENVIRONMENT }}
-      TF_VAR_clerk_publishable_key: ${{ secrets.TF_VAR_clerk_publishable_key }}
-      TF_VAR_clerk_secret_key: ${{ secrets.TF_VAR_clerk_secret_key }}
-      TF_VAR_resend_api_key: ${{ secrets.TF_VAR_resend_api_key }}
-      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_DNS_API_TOKEN }}
 
     steps:
       - uses: actions/checkout@v6.0.2
@@ -115,6 +115,12 @@ jobs:
         with:
           workload_identity_provider: "projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool-${{ vars.ENVIRONMENT }}/providers/github-provider"
           service_account: "snip-terraform-ci-${{ vars.ENVIRONMENT }}@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+
+      - id: secrets
+        uses: google-github-actions/get-secretmanager-secrets@v2
+        with:
+          secrets: |-
+            CLOUDFLARE_API_TOKEN:projects/${{ vars.GCP_PROJECT_ID }}/secrets/snip-cloudflare-api-token/versions/latest
 
       - uses: hashicorp/setup-terraform@v3.1.2
         with:
@@ -134,3 +140,5 @@ jobs:
       - name: Terragrunt Apply
         working-directory: ${{ env.WORKING_DIR }}
         run: terragrunt apply --all --non-interactive -auto-approve
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ steps.secrets.outputs.CLOUDFLARE_API_TOKEN }}

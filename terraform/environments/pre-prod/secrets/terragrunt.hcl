@@ -15,19 +15,15 @@ dependency "project" {
   }
 }
 
-dependency "database" {
-  config_path = "../database"
+dependency "ci_oidc" {
+  config_path = "../ci-oidc"
 
   mock_outputs = {
-    database_url = "postgresql+asyncpg://mock:mock@127.0.0.1:5432/mock"
+    ci_service_account_email = "mock-ci-deploy@snip-491719.iam.gserviceaccount.com"
   }
 }
 
-# Clerk/Resend keys — pass via TF_VAR_ env vars (NEVER commit)
 inputs = {
   cloud_run_service_account_email = dependency.project.outputs.cloud_run_service_account_email
-  database_url                    = dependency.database.outputs.database_url
-  clerk_publishable_key           = ""
-  clerk_secret_key                = ""
-  resend_api_key                  = ""
+  ci_deploy_service_account_email = dependency.ci_oidc.outputs.ci_service_account_email
 }
