@@ -2,7 +2,7 @@
 
 import base64
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from snip_analytics import AnalyticsClient, ClickEventRow
@@ -31,7 +31,7 @@ class PubSubEnvelope(BaseModel):
 async def ingest(
     envelope: PubSubEnvelope,
     analytics: AnalyticsClient = Depends(get_analytics_client),
-) -> dict[str, str]:
+) -> dict[str, str] | Response:
     """Receive a Pub/Sub push message and write to analytics."""
     try:
         raw = base64.b64decode(envelope.message.data)
