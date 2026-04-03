@@ -1,5 +1,5 @@
-resource "google_cloud_run_v2_service" "backend" {
-  name     = "snip-backend-${var.environment}"
+resource "google_cloud_run_v2_service" "this" {
+  name     = "snip-${var.service_name}-${var.environment}"
   location = var.region
 
   template {
@@ -10,101 +10,61 @@ resource "google_cloud_run_v2_service" "backend" {
       max_instance_count = var.max_instances
     }
 
-    # Direct VPC Egress — free alternative to VPC Connector
-    vpc_access {
-      network_interfaces {
-        network    = var.vpc_id
-        subnetwork = var.subnet_id
+    # Direct VPC Egress — only when VPC config is provided
+    dynamic "vpc_access" {
+      for_each = var.vpc_id != null ? [1] : []
+      content {
+        network_interfaces {
+          network    = var.vpc_id
+          subnetwork = var.subnet_id
+        }
+        egress = "PRIVATE_RANGES_ONLY"
       }
-      egress = "PRIVATE_RANGES_ONLY"
     }
 
     containers {
       image = var.image
 
       ports {
-        container_port = 8080
+        container_port = var.container_port
       }
 
       resources {
         limits = {
-          cpu    = "1"
-          memory = "512Mi"
+          cpu    = var.cpu
+          memory = var.memory
         }
         cpu_idle = true
       }
 
-      # Environment variables from Secret Manager
-      env {
-        name = "DATABASE_URL"
-        value_source {
-          secret_key_ref {
-            secret  = var.database_url_secret_id
-            version = "latest"
-          }
+      # Plain environment variables
+      dynamic "env" {
+        for_each = var.env_vars
+        content {
+          name  = env.key
+          value = env.value
         }
       }
 
-      env {
-        name = "CLERK_PUBLISHABLE_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = var.clerk_publishable_secret_id
-            version = "latest"
+      # Secret Manager environment variables
+      dynamic "env" {
+        for_each = var.secret_env_vars
+        content {
+          name = env.key
+          value_source {
+            secret_key_ref {
+              secret  = env.value
+              version = "latest"
+            }
           }
         }
-      }
-
-      env {
-        name = "CLERK_SECRET_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = var.clerk_secret_secret_id
-            version = "latest"
-          }
-        }
-      }
-
-      env {
-        name = "RESEND_API_KEY"
-        value_source {
-          secret_key_ref {
-            secret  = var.resend_api_key_secret_id
-            version = "latest"
-          }
-        }
-      }
-
-      env {
-        name  = "ENVIRONMENT"
-        value = var.environment == "prod" ? "production" : "staging"
-      }
-
-      env {
-        name  = "EMAIL_PROVIDER"
-        value = var.email_provider
-      }
-
-      env {
-        name  = "EMAIL_FROM"
-        value = var.email_from
-      }
-
-      env {
-        name  = "CLICK_THRESHOLD"
-        value = tostring(var.click_threshold)
-      }
-
-      env {
-        name  = "ALLOWED_ORIGINS"
-        value = var.allowed_origins
       }
     }
   }
 
   deletion_protection = false
 
-  # Image is managed by CI deploy workflow, not Terraform
+  # Image and env vars are managed by CI deploy workflow, not Terraform
   lifecycle {
     ignore_changes = [
       client,
@@ -117,7 +77,8 @@ resource "google_cloud_run_v2_service" "backend" {
 
 # Make the service publicly accessible
 resource "google_cloud_run_v2_service_iam_member" "public" {
-  name     = google_cloud_run_v2_service.backend.name
+  count    = var.public ? 1 : 0
+  name     = google_cloud_run_v2_service.this.name
   location = var.region
   role     = "roles/run.invoker"
   member   = "allUsers"

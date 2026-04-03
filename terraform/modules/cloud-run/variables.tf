@@ -13,6 +13,11 @@ variable "environment" {
   type        = string
 }
 
+variable "service_name" {
+  description = "Service name (used in resource naming: snip-{service_name}-{environment})"
+  type        = string
+}
+
 variable "image" {
   description = "Docker image URL (e.g., REGION-docker.pkg.dev/PROJECT/REPO/IMAGE:TAG)"
   type        = string
@@ -23,59 +28,41 @@ variable "service_account_email" {
   type        = string
 }
 
+# --- Optional VPC config (null = no VPC access) ---
+
 variable "vpc_id" {
-  description = "VPC network ID for Direct VPC Egress"
+  description = "VPC network ID for Direct VPC Egress (null = disabled)"
   type        = string
+  default     = null
 }
 
 variable "subnet_id" {
-  description = "Subnet ID for Direct VPC Egress"
+  description = "Subnet ID for Direct VPC Egress (required when vpc_id is set)"
   type        = string
+  default     = null
 }
 
-variable "database_url_secret_id" {
-  description = "Secret Manager secret ID for DATABASE_URL"
-  type        = string
-}
+# --- Container resources ---
 
-variable "clerk_publishable_secret_id" {
-  description = "Secret Manager secret ID for CLERK_PUBLISHABLE_KEY"
-  type        = string
-}
-
-variable "clerk_secret_secret_id" {
-  description = "Secret Manager secret ID for CLERK_SECRET_KEY"
-  type        = string
-}
-
-variable "resend_api_key_secret_id" {
-  description = "Secret Manager secret ID for RESEND_API_KEY"
-  type        = string
-}
-
-variable "email_provider" {
-  description = "Email provider (resend or mailpit)"
-  type        = string
-  default     = "resend"
-}
-
-variable "email_from" {
-  description = "Email sender address"
-  type        = string
-  default     = "Snip <noreply@snip.dev>"
-}
-
-variable "click_threshold" {
-  description = "Click count threshold for notifications"
+variable "container_port" {
+  description = "Container port"
   type        = number
-  default     = 100
+  default     = 8080
 }
 
-variable "allowed_origins" {
-  description = "Comma-separated list of allowed CORS origins"
+variable "cpu" {
+  description = "CPU limit"
   type        = string
-  default     = "http://localhost:5173"
+  default     = "1"
 }
+
+variable "memory" {
+  description = "Memory limit"
+  type        = string
+  default     = "512Mi"
+}
+
+# --- Scaling ---
 
 variable "min_instances" {
   description = "Minimum number of instances (0 = scale to zero)"
@@ -87,4 +74,26 @@ variable "max_instances" {
   description = "Maximum number of instances"
   type        = number
   default     = 2
+}
+
+# --- Environment variables ---
+
+variable "env_vars" {
+  description = "Plain environment variables (name → value)"
+  type        = map(string)
+  default     = {}
+}
+
+variable "secret_env_vars" {
+  description = "Secret Manager environment variables (name → secret_id)"
+  type        = map(string)
+  default     = {}
+}
+
+# --- Access control ---
+
+variable "public" {
+  description = "Whether to allow unauthenticated access (allUsers invoker)"
+  type        = bool
+  default     = true
 }

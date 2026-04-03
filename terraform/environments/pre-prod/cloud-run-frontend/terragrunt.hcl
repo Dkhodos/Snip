@@ -25,9 +25,14 @@ dependency "cloud_run" {
 }
 
 inputs = {
+  service_name          = "frontend"
   image                 = "gcr.io/cloudrun/hello"
+  memory                = "256Mi"
   min_instances         = 0
   max_instances         = 2
   service_account_email = dependency.project.outputs.cloud_run_service_account_email
-  backend_url           = dependency.cloud_run.outputs.service_url
+
+  env_vars = {
+    BACKEND_URL = dependency.cloud_run.outputs.service_url
+  }
 }

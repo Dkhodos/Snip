@@ -37,15 +37,26 @@ dependency "secrets" {
 }
 
 inputs = {
-  image                       = "gcr.io/cloudrun/hello"
-  min_instances               = 0
-  max_instances               = 2
-  service_account_email       = dependency.project.outputs.cloud_run_service_account_email
-  vpc_id                      = dependency.networking.outputs.vpc_id
-  subnet_id                   = dependency.networking.outputs.subnet_id
-  database_url_secret_id      = dependency.secrets.outputs.database_url_secret_id
-  clerk_publishable_secret_id = dependency.secrets.outputs.clerk_publishable_secret_id
-  clerk_secret_secret_id      = dependency.secrets.outputs.clerk_secret_secret_id
-  resend_api_key_secret_id    = dependency.secrets.outputs.resend_api_key_secret_id
-  allowed_origins             = "https://app.pre-prod.snip-app.win,http://localhost:5173"
+  service_name          = "backend"
+  image                 = "gcr.io/cloudrun/hello"
+  min_instances         = 0
+  max_instances         = 2
+  service_account_email = dependency.project.outputs.cloud_run_service_account_email
+  vpc_id                = dependency.networking.outputs.vpc_id
+  subnet_id             = dependency.networking.outputs.subnet_id
+
+  secret_env_vars = {
+    DATABASE_URL           = dependency.secrets.outputs.database_url_secret_id
+    CLERK_PUBLISHABLE_KEY  = dependency.secrets.outputs.clerk_publishable_secret_id
+    CLERK_SECRET_KEY       = dependency.secrets.outputs.clerk_secret_secret_id
+    RESEND_API_KEY         = dependency.secrets.outputs.resend_api_key_secret_id
+  }
+
+  env_vars = {
+    ENVIRONMENT     = "staging"
+    EMAIL_PROVIDER  = "resend"
+    EMAIL_FROM      = "Snip <noreply@snip.dev>"
+    CLICK_THRESHOLD = "100"
+    ALLOWED_ORIGINS = "https://app.pre-prod.snip-app.win,http://localhost:5173"
+  }
 }

@@ -9,3 +9,8 @@ include "envcommon" {
   path   = "${dirname(find_in_parent_folders("root.hcl"))}/_envcommon/cloud-run.hcl"
   expose = true
 }
+
+inputs = {
+  service_name = "backend"
+  image        = "gcr.io/cloudrun/hello"
+}
