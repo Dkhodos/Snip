@@ -58,7 +58,12 @@ class ClerkClient:
             )
 
             user_id = payload.get("sub", "")
-            org_id = payload.get("org_id", "")
+            # Clerk JWT v2 uses "o.id"; v1 used top-level "org_id"
+            org_claim = payload.get("o")
+            if isinstance(org_claim, dict):
+                org_id = org_claim.get("id", "")
+            else:
+                org_id = payload.get("org_id", "")
 
             if not user_id:
                 raise AuthenticationError("Invalid token: missing user ID")
