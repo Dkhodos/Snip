@@ -21,6 +21,7 @@ import type { Link } from "@/lib/api";
 import {
 	ArrowUpDown,
 	Copy,
+	ExternalLink,
 	MoreHorizontal,
 	Pencil,
 	Plus,
@@ -30,7 +31,7 @@ import {
 import { useEffect, useState } from "react";
 import { DeleteLinkDialog } from "./components/DeleteLinkDialog";
 import { LinkFormDialog } from "./components/LinkFormDialog";
-import { getLinkStatus, getRelativeTime } from "./helpers";
+import { getLinkStatus, getRedirectUrl, getRelativeTime } from "./helpers";
 import { useLinks } from "./hooks/useLinks";
 
 type StatusFilter = "all" | "active" | "inactive" | "expired";
@@ -81,8 +82,7 @@ export function LinksPage() {
 	}
 
 	function handleCopyUrl(shortCode: string) {
-		const baseUrl = window.location.origin.replace("dashboard.", "");
-		navigator.clipboard.writeText(`${baseUrl}/${shortCode}`);
+		navigator.clipboard.writeText(getRedirectUrl(shortCode));
 	}
 
 	const totalPages = data ? Math.ceil(data.total / data.limit) : 0;
@@ -232,6 +232,16 @@ export function LinksPage() {
 														>
 															<Copy className="mr-2 h-4 w-4" />
 															Copy URL
+														</DropdownMenuItem>
+														<DropdownMenuItem asChild>
+															<a
+																href={getRedirectUrl(link.short_code)}
+																target="_blank"
+																rel="noopener noreferrer"
+															>
+																<ExternalLink className="mr-2 h-4 w-4" />
+																Open in new tab
+															</a>
 														</DropdownMenuItem>
 														<DropdownMenuItem
 															onClick={() => setEditingLink(link)}

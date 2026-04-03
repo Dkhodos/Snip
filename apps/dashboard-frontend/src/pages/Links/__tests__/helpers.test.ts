@@ -1,6 +1,6 @@
 import type { Link } from "@/lib/api";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getLinkStatus, getRelativeTime } from "../helpers";
+import { getLinkStatus, getRedirectUrl, getRelativeTime } from "../helpers";
 
 function makeLink(overrides: Partial<Link> = {}): Link {
 	return {
@@ -17,6 +17,30 @@ function makeLink(overrides: Partial<Link> = {}): Link {
 		...overrides,
 	};
 }
+
+describe("getRedirectUrl", () => {
+	const origValue = import.meta.env.VITE_REDIRECT_BASE_URL;
+
+	afterEach(() => {
+		if (origValue === undefined) {
+			// biome-ignore lint/performance/noDelete: need real deletion for env var nullish check
+			delete import.meta.env.VITE_REDIRECT_BASE_URL;
+		} else {
+			import.meta.env.VITE_REDIRECT_BASE_URL = origValue;
+		}
+	});
+
+	it("uses VITE_REDIRECT_BASE_URL when set", () => {
+		import.meta.env.VITE_REDIRECT_BASE_URL = "https://r.example.com";
+		expect(getRedirectUrl("abc123")).toBe("https://r.example.com/r/abc123");
+	});
+
+	it("falls back to window.location.origin when env var not set", () => {
+		// biome-ignore lint/performance/noDelete: need real deletion for env var nullish check
+		delete import.meta.env.VITE_REDIRECT_BASE_URL;
+		expect(getRedirectUrl("xyz")).toBe(`${window.location.origin}/r/xyz`);
+	});
+});
 
 describe("getRelativeTime", () => {
 	beforeEach(() => {

@@ -240,6 +240,27 @@ describe("LinksPage", () => {
 		expect(screen.getByRole("button", { name: /next/i })).not.toBeDisabled();
 	});
 
+	it("kebab menu has Open in new tab link with correct href", async () => {
+		import.meta.env.VITE_REDIRECT_BASE_URL = "https://r.example.com";
+		const user = userEvent.setup({ pointerEventsCheck: 0 });
+		renderPage();
+		await screen.findByText("Test Link");
+
+		const kebab = screen.getByRole("button", { name: "" });
+		await user.click(kebab);
+
+		const openLink = await screen.findByRole("menuitem", {
+			name: /open in new tab/i,
+		});
+		expect(openLink.closest("a")).toHaveAttribute(
+			"href",
+			"https://r.example.com/r/abc123",
+		);
+		expect(openLink.closest("a")).toHaveAttribute("target", "_blank");
+		// biome-ignore lint/performance/noDelete: need real deletion for env var nullish check
+		delete import.meta.env.VITE_REDIRECT_BASE_URL;
+	});
+
 	it("hides pagination when only one page", async () => {
 		renderPage();
 		await screen.findByText("Test Link");

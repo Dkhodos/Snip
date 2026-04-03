@@ -15,6 +15,7 @@ COPY apps/dashboard-frontend/ .
 # Build-time env vars — baked into the bundle by Vite
 ARG VITE_CLERK_PUBLISHABLE_KEY
 ARG VITE_API_URL
+ARG VITE_REDIRECT_BASE_URL
 
 RUN pnpm build
 

@@ -27,6 +27,7 @@ Current environments: `pre-prod`
 | `snip-clerk-publishable-{env}` | env | Cloud Run backend (runtime) + frontend Docker build |
 | `snip-clerk-secret-{env}` | env | Cloud Run backend (runtime) |
 | `snip-resend-api-key-{env}` | env | Cloud Run backend (runtime) |
+| `snip-redirect-base-url-{env}` | env | Frontend Docker build (VITE_REDIRECT_BASE_URL) |
 | `snip-cloudflare-api-token` | global | Terraform CI (Cloudflare provider) |
 
 ## Architecture

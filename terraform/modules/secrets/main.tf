@@ -4,6 +4,7 @@ locals {
     "snip-clerk-publishable-${var.environment}",
     "snip-clerk-secret-${var.environment}",
     "snip-resend-api-key-${var.environment}",
+    "snip-redirect-base-url-${var.environment}",
   ])
 
   global_secret_names = toset([
@@ -42,9 +43,15 @@ resource "google_secret_manager_secret_iam_member" "cloud_run_access" {
   member    = "serviceAccount:${var.cloud_run_service_account_email}"
 }
 
-# CI deploy SA: read access to Clerk publishable key for frontend Docker builds
+# CI deploy SA: read access to secrets needed for frontend Docker builds
 resource "google_secret_manager_secret_iam_member" "ci_deploy_clerk_access" {
   secret_id = google_secret_manager_secret.secrets["snip-clerk-publishable-${var.environment}"].id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.ci_deploy_service_account_email}"
+}
+
+resource "google_secret_manager_secret_iam_member" "ci_deploy_redirect_url_access" {
+  secret_id = google_secret_manager_secret.secrets["snip-redirect-base-url-${var.environment}"].id
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${var.ci_deploy_service_account_email}"
 }

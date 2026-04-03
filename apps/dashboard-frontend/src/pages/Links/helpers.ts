@@ -1,5 +1,10 @@
 import type { Link } from "@/lib/api";
 
+export function getRedirectUrl(shortCode: string): string {
+	const base = import.meta.env.VITE_REDIRECT_BASE_URL ?? window.location.origin;
+	return `${base}/r/${shortCode}`;
+}
+
 export function getRelativeTime(dateStr: string): string {
 	const now = new Date();
 	const date = new Date(dateStr);
