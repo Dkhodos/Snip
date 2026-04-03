@@ -88,9 +88,12 @@ clean: ## Remove caches and build artifacts
 #    SERVICE  — Cloud Run service name, e.g. snip-frontend-pre-prod
 #    REGION   — GCP region, e.g. europe-west1
 #
-#  Optional (baked into the Vite bundle at build time):
+#  Build-time (baked into the Vite bundle):
 #    VITE_CLERK_PUBLISHABLE_KEY
 #    VITE_API_URL
+#
+#  Deploy-time (runtime env var for nginx reverse proxy):
+#    BACKEND_URL — backend Cloud Run service URL
 # ──────────────────────────────────────────────────────────────
 
 build-image: ## Build and push Docker image (requires IMAGE; optionally VITE_CLERK_PUBLISHABLE_KEY, VITE_API_URL)
@@ -102,8 +105,9 @@ build-image: ## Build and push Docker image (requires IMAGE; optionally VITE_CLE
 		$(ROOT)
 	docker push "$(IMAGE)"
 
-deploy: ## Deploy image to Cloud Run (requires IMAGE, SERVICE, REGION)
+deploy: ## Deploy image to Cloud Run (requires IMAGE, SERVICE, REGION, BACKEND_URL)
 	gcloud run deploy $(SERVICE) \
 		--image "$(IMAGE)" \
 		--region $(REGION) \
+		--update-env-vars "BACKEND_URL=$(BACKEND_URL)" \
 		--quiet

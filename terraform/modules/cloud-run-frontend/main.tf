@@ -10,12 +10,17 @@ resource "google_cloud_run_v2_service" "frontend" {
       max_instance_count = var.max_instances
     }
 
-    # No VPC access — nginx only serves static files, no DB access
+    # No VPC access — nginx proxies /api to the backend and serves static files
     containers {
       image = var.image
 
       ports {
         container_port = 8080
+      }
+
+      env {
+        name  = "BACKEND_URL"
+        value = var.backend_url
       }
 
       resources {
@@ -36,6 +41,7 @@ resource "google_cloud_run_v2_service" "frontend" {
       client,
       client_version,
       template[0].containers[0].image,
+      template[0].containers[0].env,
       scaling,
     ]
   }

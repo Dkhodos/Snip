@@ -34,3 +34,8 @@ variable "max_instances" {
   type        = number
   default     = 2
 }
+
+variable "backend_url" {
+  description = "URL of the backend Cloud Run service (e.g. https://snip-backend-pre-prod-xxx.run.app)"
+  type        = string
+}

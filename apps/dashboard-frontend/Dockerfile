@@ -22,9 +22,11 @@ RUN pnpm build
 FROM nginx:alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
-COPY apps/dashboard-frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY apps/dashboard-frontend/nginx.conf.template /etc/nginx/conf.d/default.conf.template
+COPY apps/dashboard-frontend/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 8080
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/docker-entrypoint.sh"]
 

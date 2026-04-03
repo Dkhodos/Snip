@@ -16,9 +16,18 @@ dependency "project" {
   }
 }
 
+dependency "cloud_run" {
+  config_path = "../cloud-run"
+
+  mock_outputs = {
+    service_url = "https://snip-backend-pre-prod-mock.run.app"
+  }
+}
+
 inputs = {
   image                 = "gcr.io/cloudrun/hello"
   min_instances         = 0
   max_instances         = 2
   service_account_email = dependency.project.outputs.cloud_run_service_account_email
+  backend_url           = dependency.cloud_run.outputs.service_url
 }
