@@ -1,11 +1,8 @@
 #!/bin/bash
 set -e
 
-echo "Running Alembic migrations..."
-cd /app/packages/db
-uv run --no-sync alembic upgrade head
-echo "Migrations complete."
-cd /app
+# Migrations are managed by the CI pipeline (migrate.yml → snip-migrate Cloud Run Job).
+# This service starts directly without running migrations.
 
 echo "Starting uvicorn..."
 exec uv run --no-sync --directory apps/dashboard-backend \

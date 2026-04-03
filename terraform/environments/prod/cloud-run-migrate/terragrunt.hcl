@@ -1,0 +1,16 @@
+# Prod is disabled — remove skip = true when ready to deploy
+skip = true
+
+include "root" {
+  path = find_in_parent_folders("root.hcl")
+}
+
+include "envcommon" {
+  path   = "${dirname(find_in_parent_folders("root.hcl"))}/_envcommon/cloud-run-migrate.hcl"
+  expose = true
+}
+
+inputs = {
+  job_name = "migrate"
+  image    = "gcr.io/cloudrun/hello"
+}

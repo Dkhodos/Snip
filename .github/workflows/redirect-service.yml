@@ -81,6 +81,9 @@ jobs:
       - name: Wait for Terraform (if triggered)
         uses: ./.github/actions/wait-for-terraform
 
+      - name: Wait for Migrations (if triggered)
+        uses: ./.github/actions/wait-for-migrate
+
       - id: auth
         uses: google-github-actions/auth@v3
         with:

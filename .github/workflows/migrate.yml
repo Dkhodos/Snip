@@ -1,0 +1,68 @@
+name: Migrate
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "packages/db/**"
+      - "uv.lock"
+      - "pyproject.toml"
+      - ".github/workflows/migrate.yml"
+
+concurrency:
+  group: migrate-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  migrate:
+    name: Run DB Migrations
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: ${{ vars.GCP_REGION }}
+      JOB: snip-migrate-${{ vars.ENVIRONMENT }}
+      REPO: snip-${{ vars.ENVIRONMENT }}
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Wait for Terraform (if triggered)
+        uses: ./.github/actions/wait-for-terraform
+
+      - id: auth
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: "projects/${{ vars.GCP_PROJECT_NUMBER }}/locations/global/workloadIdentityPools/github-pool-${{ vars.ENVIRONMENT }}/providers/github-provider"
+          service_account: "snip-ci-deploy-${{ vars.ENVIRONMENT }}@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
+
+      - uses: google-github-actions/setup-gcloud@v2.2.1
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push migration image
+        run: |
+          make db:build-image \
+            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/migrate:${{ github.sha }}"
+
+      - name: Update Cloud Run Job image
+        run: |
+          gcloud run jobs update ${{ env.JOB }} \
+            --image "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/migrate:${{ github.sha }}" \
+            --region ${{ env.REGION }}
+
+      - name: Execute migrations
+        run: |
+          gcloud run jobs execute ${{ env.JOB }} \
+            --region ${{ env.REGION }} \
+            --wait

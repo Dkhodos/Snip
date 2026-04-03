@@ -25,7 +25,7 @@ TESTS        := tests
 #  Phony targets
 # ──────────────────────────────────────────────────────────────
 
-.PHONY: help venv install sync lint lint\:fix type\:check test\:unit clean
+.PHONY: help venv install sync lint lint\:fix type\:check test\:unit build\:image clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_:\\]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -78,6 +78,18 @@ test\:unit: sync ## Run unit tests with coverage report
 		--cov-report=term-missing \
 		--cov-fail-under=90 \
 		-v
+
+# ──────────────────────────────────────────────────────────────
+#  Docker
+# ──────────────────────────────────────────────────────────────
+
+IMAGE ?= snip-migrate:latest
+
+build\:image: ## Build the migration Docker image (IMAGE=... to override tag)
+	docker build \
+		-f $(ROOT)/packages/db/Dockerfile \
+		-t $(IMAGE) \
+		$(ROOT)
 
 # ──────────────────────────────────────────────────────────────
 #  Cleanup
