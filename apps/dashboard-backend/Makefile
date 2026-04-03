@@ -100,7 +100,7 @@ clean: ## Remove caches and build artifacts
 build-image: ## Build and push Docker image (requires IMAGE)
 	docker build \
 		-t "$(IMAGE)" \
-		-f apps/dashboard-backend/Dockerfile \
+		-f $(ROOT)/apps/dashboard-backend/Dockerfile \
 		$(ROOT)
 	docker push "$(IMAGE)"
 

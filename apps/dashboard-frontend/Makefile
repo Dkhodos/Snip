@@ -98,7 +98,7 @@ build-image: ## Build and push Docker image (requires IMAGE; optionally VITE_CLE
 		--build-arg VITE_CLERK_PUBLISHABLE_KEY="$(VITE_CLERK_PUBLISHABLE_KEY)" \
 		--build-arg VITE_API_URL="$(VITE_API_URL)" \
 		-t "$(IMAGE)" \
-		-f apps/dashboard-frontend/Dockerfile \
+		-f $(ROOT)/apps/dashboard-frontend/Dockerfile \
 		$(ROOT)
 	docker push "$(IMAGE)"
 
