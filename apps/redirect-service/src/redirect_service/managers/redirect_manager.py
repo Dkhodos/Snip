@@ -31,7 +31,13 @@ class RedirectManager:
         self._publisher = publisher
         self._click_topic = click_topic
 
-    async def resolve_redirect(self, short_code: str) -> RedirectResult:
+    async def resolve_redirect(
+        self,
+        short_code: str,
+        *,
+        user_agent: str | None = None,
+        country: str | None = None,
+    ) -> RedirectResult:
         link = await self._link_store.get_by_short_code(short_code, active_only=True)
         if not link:
             raise LinkNotFoundError()
@@ -52,6 +58,8 @@ class RedirectManager:
                 short_code=short_code,
                 org_id=link.org_id,
                 clicked_at=now,
+                user_agent=user_agent,
+                country=country,
             )
             await self._publisher.publish(self._click_topic, message.to_json())
         except Exception:

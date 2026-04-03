@@ -1,5 +1,6 @@
 """Tests for the redirect manager."""
 
+import json
 from datetime import datetime, timedelta, timezone
 from unittest.mock import AsyncMock, MagicMock
 
@@ -80,6 +81,19 @@ class TestRedirectManager:
 
         with pytest.raises(LinkExpiredError):
             await manager.resolve_redirect("expired")
+
+    async def test_resolve_redirect_passes_user_agent_and_country(
+        self, manager: RedirectManager, link_store: AsyncMock, publisher: AsyncMock
+    ) -> None:
+        link = _make_link()
+        link_store.get_by_short_code.return_value = link
+
+        await manager.resolve_redirect("abc123", user_agent="Mozilla/5.0", country="US")
+
+        published_bytes = publisher.publish.call_args[0][1]
+        payload = json.loads(published_bytes)
+        assert payload["user_agent"] == "Mozilla/5.0"
+        assert payload["country"] == "US"
 
     async def test_publisher_failure_does_not_fail_redirect(
         self, manager: RedirectManager, link_store: AsyncMock, publisher: AsyncMock

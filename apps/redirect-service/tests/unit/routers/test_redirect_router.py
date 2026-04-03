@@ -31,6 +31,22 @@ class TestRedirectRouter:
         assert resp.status_code == 302
         assert resp.headers["location"] == "https://example.com"
 
+    async def test_redirect_passes_user_agent_and_country(self) -> None:
+        mgr = AsyncMock()
+        mgr.resolve_redirect.return_value = RedirectResult(
+            target_url="https://example.com", click_count=1, created_by="user1"
+        )
+        app.dependency_overrides[get_redirect_manager] = lambda: mgr
+        resp = await self.client.get(
+            "/r/abc123",
+            headers={"user-agent": "TestBot/1.0", "cf-ipcountry": "IL"},
+            follow_redirects=False,
+        )
+        assert resp.status_code == 302
+        mgr.resolve_redirect.assert_awaited_once_with(
+            "abc123", user_agent="TestBot/1.0", country="IL"
+        )
+
     async def test_not_found_returns_404(self) -> None:
         mgr = AsyncMock()
         mgr.resolve_redirect.side_effect = LinkNotFoundError()
