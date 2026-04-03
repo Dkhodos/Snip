@@ -13,3 +13,7 @@ output "artifact_registry_url" {
 output "api_services" {
   value = [for s in google_project_service.apis : s.service]
 }
+
+output "project_number" {
+  value = data.google_project.current.number
+}
