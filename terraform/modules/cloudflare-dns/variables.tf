@@ -32,3 +32,9 @@ variable "backend_service_name" {
   description = "Cloud Run backend service name"
   type        = string
 }
+
+variable "redirect_service_name" {
+  description = "Cloud Run redirect service name (null = skip redirect DNS)"
+  type        = string
+  default     = null
+}

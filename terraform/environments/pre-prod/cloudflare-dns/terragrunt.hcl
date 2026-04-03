@@ -55,9 +55,18 @@ dependency "cloud_run_frontend" {
   }
 }
 
+dependency "cloud_run_redirect" {
+  config_path = "../cloud-run-redirect"
+
+  mock_outputs = {
+    service_name = "snip-redirect-pre-prod"
+  }
+}
+
 inputs = {
-  cloudflare_zone_id    = "27a72a4ec5db61b37b966524a1012fef"
-  domain                = "snip-app.win"
-  frontend_service_name = dependency.cloud_run_frontend.outputs.service_name
-  backend_service_name  = dependency.cloud_run.outputs.service_name
+  cloudflare_zone_id     = "27a72a4ec5db61b37b966524a1012fef"
+  domain                 = "snip-app.win"
+  frontend_service_name  = dependency.cloud_run_frontend.outputs.service_name
+  backend_service_name   = dependency.cloud_run.outputs.service_name
+  redirect_service_name  = dependency.cloud_run_redirect.outputs.service_name
 }

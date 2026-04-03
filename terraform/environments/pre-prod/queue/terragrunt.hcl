@@ -16,10 +16,17 @@ dependency "project" {
   }
 }
 
+dependency "cloud_run_click_worker" {
+  config_path = "../cloud-run-click-worker"
+
+  mock_outputs = {
+    service_url = "https://snip-click-worker-pre-prod-mock.run.app"
+  }
+}
+
 inputs = {
   project_number                  = dependency.project.outputs.project_number
   cloud_run_service_account_email = dependency.project.outputs.cloud_run_service_account_email
-  # Push subscription will be configured after click-worker is deployed
-  click_worker_endpoint           = ""
-  push_service_account_email      = ""
+  click_worker_endpoint           = "${dependency.cloud_run_click_worker.outputs.service_url}/ingest"
+  push_service_account_email      = dependency.project.outputs.cloud_run_service_account_email
 }
