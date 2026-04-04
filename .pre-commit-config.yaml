@@ -31,6 +31,34 @@ repos:
         files: ^packages/logger/.*\.py$
         pass_filenames: false
 
+      - id: lint-snip-analytics
+        name: "lint: snip-analytics"
+        entry: make analytics:lint
+        language: system
+        files: ^packages/analytics/.*\.py$
+        pass_filenames: false
+
+      - id: lint-snip-queue
+        name: "lint: snip-queue"
+        entry: make queue:lint
+        language: system
+        files: ^packages/queue/.*\.py$
+        pass_filenames: false
+
+      - id: lint-click-worker
+        name: "lint: click-worker"
+        entry: make click-worker:lint
+        language: system
+        files: ^apps/click-worker/.*\.py$
+        pass_filenames: false
+
+      - id: lint-redirect-service
+        name: "lint: redirect-service"
+        entry: make redirect-service:lint
+        language: system
+        files: ^apps/redirect-service/.*\.py$
+        pass_filenames: false
+
       - id: lint-dashboard-backend
         name: "lint: dashboard-backend"
         entry: make dashboard-backend:lint
@@ -65,6 +93,34 @@ repos:
         entry: make logger:type:check
         language: system
         files: ^packages/logger/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-snip-analytics
+        name: "type-check: snip-analytics"
+        entry: make analytics:type:check
+        language: system
+        files: ^packages/analytics/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-snip-queue
+        name: "type-check: snip-queue"
+        entry: make queue:type:check
+        language: system
+        files: ^packages/queue/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-click-worker
+        name: "type-check: click-worker"
+        entry: make click-worker:type:check
+        language: system
+        files: ^apps/click-worker/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-redirect-service
+        name: "type-check: redirect-service"
+        entry: make redirect-service:type:check
+        language: system
+        files: ^apps/redirect-service/.*\.py$
         pass_filenames: false
 
       - id: typecheck-dashboard-backend
