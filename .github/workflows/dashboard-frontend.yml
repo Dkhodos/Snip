@@ -83,12 +83,15 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v3
 
-      - id: secrets
-        uses: google-github-actions/get-secretmanager-secrets@v3
-        with:
-          secrets: |-
-            VITE_CLERK_PUBLISHABLE_KEY:projects/${{ vars.GCP_PROJECT_ID }}/secrets/snip-clerk-publishable-${{ vars.ENVIRONMENT }}/versions/latest
-            VITE_REDIRECT_BASE_URL:projects/${{ vars.GCP_PROJECT_ID }}/secrets/snip-redirect-base-url-${{ vars.ENVIRONMENT }}/versions/latest
+      - name: Read frontend config from Parameter Manager
+        id: config
+        run: |
+          CONFIG=$(gcloud parametermanager parameters versions describe current \
+            --parameter=snip-frontend-config-${{ vars.ENVIRONMENT }} \
+            --location=global \
+            --format='value(payload.data)' | base64 -d)
+          echo "VITE_CLERK_PUBLISHABLE_KEY=$(echo "$CONFIG" | jq -r '.clerk_publishable_key')" >> "$GITHUB_OUTPUT"
+          echo "VITE_REDIRECT_BASE_URL=$(echo "$CONFIG" | jq -r '.redirect_base_url')" >> "$GITHUB_OUTPUT"
 
       - name: Resolve backend URL
         id: backend_url
@@ -105,9 +108,9 @@ jobs:
         run: |
           make dashboard-frontend:build-image \
             IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-frontend:${{ github.sha }}" \
-            VITE_CLERK_PUBLISHABLE_KEY="${{ steps.secrets.outputs.VITE_CLERK_PUBLISHABLE_KEY }}" \
+            VITE_CLERK_PUBLISHABLE_KEY="${{ steps.config.outputs.VITE_CLERK_PUBLISHABLE_KEY }}" \
             VITE_API_URL="/api" \
-            VITE_REDIRECT_BASE_URL="${{ steps.secrets.outputs.VITE_REDIRECT_BASE_URL }}"
+            VITE_REDIRECT_BASE_URL="${{ steps.config.outputs.VITE_REDIRECT_BASE_URL }}"
 
       - name: Deploy to Cloud Run
         run: |

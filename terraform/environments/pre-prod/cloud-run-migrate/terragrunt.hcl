@@ -28,8 +28,20 @@ dependency "networking" {
 dependency "secrets" {
   config_path = "../secrets"
 
+  # Ensures SM secrets exist before Cloud Run references them.
+  # TODO: remove after Phase 3b (SM migrated into config module).
+  mock_outputs = {}
+}
+
+dependency "config" {
+  config_path = "../config"
+
   mock_outputs = {
-    database_url_secret_id = "mock-db-url"
+    secret_env_vars = {
+      migrate = {
+        DATABASE_URL = "mock-db-url"
+      }
+    }
   }
 }
 
@@ -40,7 +52,5 @@ inputs = {
   vpc_id                = dependency.networking.outputs.vpc_id
   subnet_id             = dependency.networking.outputs.subnet_id
 
-  secret_env_vars = {
-    DATABASE_URL = dependency.secrets.outputs.database_url_secret_id
-  }
+  secret_env_vars = dependency.config.outputs.secret_env_vars["migrate"]
 }

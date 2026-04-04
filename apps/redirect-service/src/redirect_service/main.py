@@ -17,7 +17,7 @@ from redirect_service.routers import redirect
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     configure_logging(is_local=settings.environment == "development")
-    engine = create_engine(settings.database_url)
+    engine = create_engine(settings.effective_database_url)
     session_factory = create_session_factory(engine)
     init_session_factory(session_factory)
     yield

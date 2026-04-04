@@ -24,6 +24,16 @@ dependency "cloud_run" {
   }
 }
 
+dependency "config" {
+  config_path = "../config"
+
+  mock_outputs = {
+    env_vars = {
+      frontend = {}
+    }
+  }
+}
+
 inputs = {
   service_name          = "frontend"
   image                 = "gcr.io/cloudrun/hello"
@@ -32,7 +42,9 @@ inputs = {
   max_instances         = 2
   service_account_email = dependency.project.outputs.cloud_run_service_account_email
 
-  env_vars = {
-    BACKEND_URL = dependency.cloud_run.outputs.service_url
-  }
+  # Merge static YAML config with dynamic cross-service values
+  env_vars = merge(
+    dependency.config.outputs.env_vars["frontend"],
+    { BACKEND_URL = dependency.cloud_run.outputs.service_url },
+  )
 }

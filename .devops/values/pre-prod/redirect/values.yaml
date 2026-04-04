@@ -1,0 +1,2 @@
+queue_provider: gcp_pubsub
+click_topic: click-events-pre-prod

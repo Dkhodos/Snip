@@ -23,6 +23,13 @@ target_metadata = Base.metadata
 def get_url() -> str:
     """Get database URL from environment, converting async URL to sync for Alembic."""
     url = os.environ.get("DATABASE_URL", "")
+    if not url:
+        host = os.environ["DB_HOST"]
+        port = os.environ.get("DB_PORT", "5432")
+        name = os.environ["DB_NAME"]
+        user = os.environ["DB_USER"]
+        password = os.environ["DB_PASSWORD"]
+        url = f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{name}"
     # Alembic needs a sync driver
     return url.replace("postgresql+asyncpg://", "postgresql+psycopg://")
 

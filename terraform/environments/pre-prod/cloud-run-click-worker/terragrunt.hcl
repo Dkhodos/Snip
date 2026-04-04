@@ -16,6 +16,21 @@ dependency "project" {
   }
 }
 
+dependency "config" {
+  config_path = "../config"
+
+  mock_outputs = {
+    env_vars = {
+      click-worker = {
+        ENVIRONMENT        = "staging"
+        ANALYTICS_PROVIDER = "gcp_bigquery"
+        BQ_DATASET         = "snip_analytics_pre_prod"
+        BQ_TABLE           = "click_events"
+      }
+    }
+  }
+}
+
 inputs = {
   service_name          = "click-worker"
   image                 = "gcr.io/cloudrun/hello"
@@ -30,11 +45,5 @@ inputs = {
 
   # No VPC needed — click-worker has no database access
 
-  env_vars = {
-    ENVIRONMENT        = "staging"
-    ANALYTICS_PROVIDER = "gcp_bigquery"
-    GCP_PROJECT_ID     = "snip-491719"
-    BQ_DATASET         = "snip_analytics_pre_prod"
-    BQ_TABLE           = "click_events"
-  }
+  env_vars = dependency.config.outputs.env_vars["click-worker"]
 }

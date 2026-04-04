@@ -1,0 +1,2 @@
+redirect_base_url: "" # TODO: set prod redirect base URL
+clerk_publishable_key: "" # TODO: set prod Clerk publishable key

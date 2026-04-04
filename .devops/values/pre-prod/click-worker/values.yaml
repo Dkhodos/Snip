@@ -1,0 +1,3 @@
+analytics_provider: gcp_bigquery
+bq_dataset: snip_analytics_pre_prod
+bq_table: click_events

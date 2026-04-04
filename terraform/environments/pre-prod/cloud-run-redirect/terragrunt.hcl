@@ -28,8 +28,27 @@ dependency "networking" {
 dependency "secrets" {
   config_path = "../secrets"
 
+  # Ensures SM secrets exist before Cloud Run references them.
+  # TODO: remove after Phase 3b (SM migrated into config module).
+  mock_outputs = {}
+}
+
+dependency "config" {
+  config_path = "../config"
+
   mock_outputs = {
-    database_url_secret_id = "mock-db-url"
+    env_vars = {
+      redirect = {
+        ENVIRONMENT    = "staging"
+        QUEUE_PROVIDER = "gcp_pubsub"
+        CLICK_TOPIC    = "click-events-pre-prod"
+      }
+    }
+    secret_env_vars = {
+      redirect = {
+        DATABASE_URL = "mock-db-url"
+      }
+    }
   }
 }
 
@@ -51,14 +70,6 @@ inputs = {
   vpc_id                = dependency.networking.outputs.vpc_id
   subnet_id             = dependency.networking.outputs.subnet_id
 
-  secret_env_vars = {
-    DATABASE_URL = dependency.secrets.outputs.database_url_secret_id
-  }
-
-  env_vars = {
-    ENVIRONMENT    = "staging"
-    QUEUE_PROVIDER = "gcp_pubsub"
-    GCP_PROJECT_ID = "snip-491719"
-    CLICK_TOPIC    = "click-events-pre-prod"
-  }
+  env_vars        = dependency.config.outputs.env_vars["redirect"]
+  secret_env_vars = dependency.config.outputs.secret_env_vars["redirect"]
 }

@@ -1,0 +1,5 @@
+email_provider: resend
+email_from: "Snip <noreply@snip.dev>"
+click_threshold: "100"
+allowed_origins: "" # TODO: set prod allowed origins
+clerk_publishable_key: "" # TODO: set prod Clerk publishable key

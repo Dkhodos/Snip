@@ -1,0 +1,3 @@
+# Global defaults shared by ALL services.
+# Service-specific values go in {env}/{service}/values.yaml.
+{}

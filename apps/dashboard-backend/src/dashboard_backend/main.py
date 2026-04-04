@@ -24,7 +24,7 @@ from dashboard_backend.routers import clicks, flags, links, stats
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan: set up and tear down DB engine."""
     configure_logging(is_local=settings.environment == "development")
-    engine = create_engine(settings.database_url)
+    engine = create_engine(settings.effective_database_url)
     session_factory = create_session_factory(engine)
     init_session_factory(session_factory)
 

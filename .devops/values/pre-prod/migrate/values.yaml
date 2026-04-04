@@ -1,0 +1,2 @@
+# Migrate job has no plain config values — only secrets (DATABASE_URL).
+{}

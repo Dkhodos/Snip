@@ -28,11 +28,31 @@ dependency "networking" {
 dependency "secrets" {
   config_path = "../secrets"
 
+  # Ensures SM secrets exist before Cloud Run references them.
+  # TODO: remove after Phase 3b (SM migrated into config module).
+  mock_outputs = {}
+}
+
+dependency "config" {
+  config_path = "../config"
+
   mock_outputs = {
-    database_url_secret_id      = "mock-db-url"
-    clerk_publishable_secret_id = "mock-clerk-pub"
-    clerk_secret_secret_id      = "mock-clerk-secret"
-    resend_api_key_secret_id    = "mock-resend-key"
+    env_vars = {
+      backend = {
+        ENVIRONMENT     = "staging"
+        EMAIL_PROVIDER  = "resend"
+        EMAIL_FROM      = "Snip <noreply@snip.dev>"
+        CLICK_THRESHOLD = "100"
+        ALLOWED_ORIGINS = "https://app.pre-prod.snip-app.win,http://localhost:5173"
+      }
+    }
+    secret_env_vars = {
+      backend = {
+        DATABASE_URL     = "mock-db-url"
+        CLERK_SECRET_KEY = "mock-clerk-secret"
+        RESEND_API_KEY   = "mock-resend-key"
+      }
+    }
   }
 }
 
@@ -45,18 +65,6 @@ inputs = {
   vpc_id                = dependency.networking.outputs.vpc_id
   subnet_id             = dependency.networking.outputs.subnet_id
 
-  secret_env_vars = {
-    DATABASE_URL           = dependency.secrets.outputs.database_url_secret_id
-    CLERK_PUBLISHABLE_KEY  = dependency.secrets.outputs.clerk_publishable_secret_id
-    CLERK_SECRET_KEY       = dependency.secrets.outputs.clerk_secret_secret_id
-    RESEND_API_KEY         = dependency.secrets.outputs.resend_api_key_secret_id
-  }
-
-  env_vars = {
-    ENVIRONMENT     = "staging"
-    EMAIL_PROVIDER  = "resend"
-    EMAIL_FROM      = "Snip <noreply@snip.dev>"
-    CLICK_THRESHOLD = "100"
-    ALLOWED_ORIGINS = "https://app.pre-prod.snip-app.win,http://localhost:5173"
-  }
+  env_vars        = dependency.config.outputs.env_vars["backend"]
+  secret_env_vars = dependency.config.outputs.secret_env_vars["backend"]
 }
