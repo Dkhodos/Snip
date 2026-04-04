@@ -1,12 +1,16 @@
 """Tests for ClerkClient."""
 
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+from jwt.exceptions import PyJWTError
 
 from snip_auth.exceptions import AuthenticationError, OrganizationRequiredError
 from snip_auth.protocol import AuthUser
 from snip_auth.providers.clerk.client import ClerkClient
+
+# Patch target for RSAAlgorithm.from_jwk — called before jwt.decode in verify_token
+_PATCH_FROM_JWK = "snip_auth.providers.clerk.client.RSAAlgorithm.from_jwk"
 
 
 class TestClerkClient:
@@ -28,7 +32,10 @@ class TestClerkClient:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
+        with (
+            patch("snip_auth.providers.clerk.client.jwt") as mock_jwt,
+            patch(_PATCH_FROM_JWK, return_value=MagicMock()),
+        ):
             mock_jwt.get_unverified_header.return_value = {"kid": "key1"}
             mock_jwt.decode.return_value = {"sub": "", "org_id": "org1"}
             with pytest.raises(AuthenticationError, match="missing user ID"):
@@ -38,7 +45,10 @@ class TestClerkClient:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
+        with (
+            patch("snip_auth.providers.clerk.client.jwt") as mock_jwt,
+            patch(_PATCH_FROM_JWK, return_value=MagicMock()),
+        ):
             mock_jwt.get_unverified_header.return_value = {"kid": "key1"}
             mock_jwt.decode.return_value = {"sub": "user_123", "org_id": ""}
             with pytest.raises(OrganizationRequiredError):
@@ -48,32 +58,36 @@ class TestClerkClient:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
+        with (
+            patch("snip_auth.providers.clerk.client.jwt") as mock_jwt,
+            patch(_PATCH_FROM_JWK, return_value=MagicMock()),
+        ):
             mock_jwt.get_unverified_header.return_value = {"kid": "key1"}
             mock_jwt.decode.return_value = {"sub": "user_123", "org_id": "org_456"}
             user = await client.verify_token("valid_token")
             assert user == AuthUser(user_id="user_123", org_id="org_456")
 
     async def test_verify_token_jwt_error(self) -> None:
-        from jose import JWTError
-
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
         with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
-            mock_jwt.get_unverified_header.side_effect = JWTError("bad token")
-            mock_jwt.JWTError = JWTError
-            with pytest.raises(JWTError):
+            mock_jwt.get_unverified_header.side_effect = PyJWTError("bad token")
+            mock_jwt.PyJWTError = PyJWTError
+            with pytest.raises(PyJWTError):
                 await client.verify_token("bad")
 
     async def test_verify_token_unexpected_error(self) -> None:
         client = ClerkClient("pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk")
         client._jwks_cache = {"keys": [{"kid": "key1"}]}
 
-        with patch("snip_auth.providers.clerk.client.jwt") as mock_jwt:
+        with (
+            patch("snip_auth.providers.clerk.client.jwt") as mock_jwt,
+            patch(_PATCH_FROM_JWK, return_value=MagicMock()),
+        ):
             mock_jwt.get_unverified_header.return_value = {"kid": "key1"}
             mock_jwt.decode.side_effect = ValueError("something weird")
-            with pytest.raises(AuthenticationError, match="something weird"):
+            with pytest.raises(AuthenticationError, match="Authentication failed"):
                 await client.verify_token("bad")
 
     async def test_get_jwks_caches(self) -> None:
