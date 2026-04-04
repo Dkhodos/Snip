@@ -25,14 +25,6 @@ dependency "networking" {
   }
 }
 
-dependency "secrets" {
-  config_path = "../secrets"
-
-  # Ensures SM secrets exist before Cloud Run references them.
-  # TODO: remove after Phase 3b (SM migrated into config module).
-  mock_outputs = {}
-}
-
 dependency "config" {
   config_path = "../config"
 

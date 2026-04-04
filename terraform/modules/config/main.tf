@@ -1,10 +1,6 @@
 # ---------------------------------------------------------------------------
 # Config module — reads .devops/ YAML, pushes to Parameter Manager,
-# optionally creates Secret Manager shells, and outputs env var maps
-# for Cloud Run consumption.
-#
-# Phase 3a: set manage_secrets = false to keep SM in the old secrets/ module.
-# Phase 3b: set manage_secrets = true to bring SM under this module.
+# creates Secret Manager shells, and outputs env var maps for Cloud Run.
 # ---------------------------------------------------------------------------
 
 # Enable Parameter Manager API (idempotent)
@@ -201,5 +197,5 @@ resource "google_secret_manager_secret_iam_member" "pm_secret_access" {
 
   secret_id = google_secret_manager_secret.env_secrets[each.value.secret_name].id
   role      = "roles/secretmanager.secretAccessor"
-  member    = google_parameter_manager_parameter.service_config[each.value.service].policy_member[0].iam_policy_name_principal
+  member    = google_parameter_manager_parameter.service_config[each.value.service].policy_member[0].iam_policy_uid_principal
 }

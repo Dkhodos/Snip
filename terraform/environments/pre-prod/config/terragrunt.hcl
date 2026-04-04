@@ -26,7 +26,8 @@ dependency "ci_oidc" {
 inputs = {
   devops_root = "${get_repo_root()}/.devops"
   services    = ["backend", "frontend", "redirect", "click-worker", "migrate"]
-  env_enabled = true
+  env_enabled    = true
+  manage_secrets = true
 
   cloud_run_service_account_email = dependency.project.outputs.cloud_run_service_account_email
   ci_deploy_service_account_email = dependency.ci_oidc.outputs.ci_service_account_email
