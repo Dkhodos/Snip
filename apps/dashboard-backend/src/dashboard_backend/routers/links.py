@@ -2,10 +2,11 @@
 
 from datetime import datetime
 from typing import Optional
+from urllib.parse import urlparse
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from snip_auth import AuthUser
 
 from dashboard_backend.dependencies import get_current_user, get_link_manager
@@ -13,17 +14,43 @@ from dashboard_backend.managers.link_manager import LinkManager
 
 router = APIRouter(prefix="/links", tags=["links"])
 
+_ALLOWED_URL_SCHEMES = {"http", "https"}
+
+
+def _validate_target_url(v: str) -> str:
+    parsed = urlparse(v)
+    if parsed.scheme.lower() not in _ALLOWED_URL_SCHEMES:
+        raise ValueError("Only http and https URLs are allowed")
+    return v
+
 
 class CreateLinkRequest(BaseModel):
     target_url: str
     title: str
-    custom_short_code: str | None = None
+    custom_short_code: str | None = Field(
+        None,
+        min_length=3,
+        max_length=32,
+        pattern=r"^[a-zA-Z0-9_-]+$",
+    )
+
+    @field_validator("target_url")
+    @classmethod
+    def validate_target_url(cls, v: str) -> str:
+        return _validate_target_url(v)
 
 
 class UpdateLinkRequest(BaseModel):
     target_url: str | None = None
     title: str | None = None
     is_active: bool | None = None
+
+    @field_validator("target_url")
+    @classmethod
+    def validate_target_url(cls, v: str | None) -> str | None:
+        if v is None:
+            return v
+        return _validate_target_url(v)
 
 
 class LinkResponse(BaseModel):

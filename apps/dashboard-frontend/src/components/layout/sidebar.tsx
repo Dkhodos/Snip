@@ -5,7 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { DEV_MODE } from "@/lib/dev-mode";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, Link2, Settings, Wrench } from "lucide-react";
+import { LayoutDashboard, Link2, Settings } from "lucide-react";
 
 interface NavItem {
 	label: string;
@@ -17,10 +17,6 @@ const navItems: NavItem[] = [
 	{ label: "Dashboard", to: "/dashboard", icon: LayoutDashboard },
 	{ label: "Links", to: "/links", icon: Link2 },
 	{ label: "Settings", to: "/settings", icon: Settings },
-];
-
-const devNavItems: NavItem[] = [
-	{ label: "Dev Tools", to: "/dev", icon: Wrench },
 ];
 
 function NavLinks({ items }: { items: NavItem[] }) {
@@ -70,15 +66,6 @@ export function Sidebar() {
 			<ScrollArea className="flex-1 px-3 py-4">
 				<NavLinks items={navItems} />
 			</ScrollArea>
-
-			{DEV_MODE && (
-				<div className="border-t border-border px-3 py-4">
-					<p className="mb-2 px-3 text-xs font-medium uppercase text-muted-foreground">
-						Dev
-					</p>
-					<NavLinks items={devNavItems} />
-				</div>
-			)}
 		</div>
 	);
 }

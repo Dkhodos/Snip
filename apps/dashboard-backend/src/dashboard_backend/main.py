@@ -43,8 +43,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[o.strip() for o in settings.allowed_origins.split(",")],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Requested-With"],
 )
 
 
@@ -85,12 +85,6 @@ app.include_router(links.router)
 app.include_router(clicks.router)
 app.include_router(flags.router)
 app.include_router(stats.router)
-
-# Dev-only routers — only mounted when ENVIRONMENT=development
-if settings.environment == "development":
-    from dashboard_backend.routers import seed
-
-    app.include_router(seed.router, prefix="/dev")
 
 
 @app.get("/health")

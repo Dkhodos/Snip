@@ -8,6 +8,7 @@ dependencies = [
     "snip-logger",
     "fastapi[standard]",
     "pydantic-settings",
+    "google-auth>=2.0",
 ]
 
 [project.optional-dependencies]

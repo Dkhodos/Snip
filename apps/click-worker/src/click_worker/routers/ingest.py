@@ -9,7 +9,7 @@ from snip_analytics import AnalyticsClient, ClickEventRow
 from snip_logger import get_logger
 from snip_queue import ClickEventMessage
 
-from click_worker.dependencies import get_analytics_client
+from click_worker.dependencies import get_analytics_client, verify_pubsub_token
 
 _log = get_logger("click-worker", log_prefix="Ingest")
 
@@ -31,6 +31,7 @@ class PubSubEnvelope(BaseModel):
 async def ingest(
     envelope: PubSubEnvelope,
     analytics: AnalyticsClient = Depends(get_analytics_client),
+    _: None = Depends(verify_pubsub_token),
 ) -> dict[str, str] | JSONResponse:
     """Receive a Pub/Sub push message and write to analytics."""
     try:

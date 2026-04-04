@@ -1,7 +1,7 @@
 """Redirect business logic manager."""
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 
 from snip_db.stores.link_store import LinkStore
@@ -42,8 +42,8 @@ class RedirectManager:
         if not link:
             raise LinkNotFoundError()
 
-        now = datetime.now(tz=timezone.utc)
-        if link.expires_at and link.expires_at < now.replace(tzinfo=None):
+        now = datetime.utcnow()
+        if link.expires_at and link.expires_at < now:
             raise LinkExpiredError()
 
         # Increment click count in Postgres (synchronous, transactional)

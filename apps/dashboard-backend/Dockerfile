@@ -24,5 +24,8 @@ RUN cd apps/dashboard-backend && uv sync --frozen --no-dev
 COPY apps/dashboard-backend/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
+RUN adduser --system --no-create-home --group appuser
+USER appuser
+
 CMD ["/app/entrypoint.sh"]
 

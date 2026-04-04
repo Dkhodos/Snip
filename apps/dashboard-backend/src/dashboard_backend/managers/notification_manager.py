@@ -1,5 +1,6 @@
 """Notification business logic manager."""
 
+import html as html_mod
 from typing import Dict, Optional
 
 import httpx
@@ -83,12 +84,14 @@ class NotificationManager:
 
     @staticmethod
     def _build_html(short_code: str, target_url: str, threshold: int) -> str:
+        safe_url = html_mod.escape(target_url)
+        safe_code = html_mod.escape(short_code)
         return (
             '<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">'
             "<h2>Milestone reached!</h2>"
-            f"<p>Your link <strong>/{short_code}</strong> just hit "
+            f"<p>Your link <strong>/{safe_code}</strong> just hit "
             f"<strong>{threshold}</strong> clicks.</p>"
-            f'<p>Target: <a href="{target_url}">{target_url}</a></p>'
+            f'<p>Target: <a href="{safe_url}">{safe_url}</a></p>'
             '<p style="color: #888; font-size: 12px;">— Snip</p>'
             "</div>"
         )

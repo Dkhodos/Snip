@@ -2,10 +2,13 @@
 
 import base64
 import logging
-from typing import Dict, Optional
+from typing import Any, Dict, Optional, cast
 
 import httpx
-from jose import JWTError, jwt
+import jwt
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicKey
+from jwt.algorithms import RSAAlgorithm
+from jwt.exceptions import PyJWTError
 
 from snip_auth.exceptions import AuthenticationError, OrganizationRequiredError
 from snip_auth.protocol import AuthClient, AuthUser
@@ -33,7 +36,7 @@ class ClerkClient:
                 resp = await client.get(url)
                 resp.raise_for_status()
                 self._jwks_cache = resp.json()
-            _log.info(f"jwks_fetched url={self._get_jwks_url()}")
+            _log.info("jwks_fetched", extra={"url": self._get_jwks_url()})
         assert self._jwks_cache is not None
         return self._jwks_cache
 
@@ -41,18 +44,20 @@ class ClerkClient:
         try:
             jwks = await self._get_jwks()
             unverified_header = jwt.get_unverified_header(token)
-            key = None
+            jwk: Optional[Dict[str, Any]] = None
             for k in jwks.get("keys", []):
                 if k["kid"] == unverified_header.get("kid"):
-                    key = k
+                    jwk = k
                     break
 
-            if key is None:
+            if jwk is None:
                 raise AuthenticationError("Invalid token signing key")
+
+            public_key = cast(RSAPublicKey, RSAAlgorithm.from_jwk(jwk))
 
             payload = jwt.decode(
                 token,
-                key,
+                public_key,
                 algorithms=["RS256"],
                 options={"verify_aud": False},
             )
@@ -71,13 +76,14 @@ class ClerkClient:
             if not org_id:
                 raise OrganizationRequiredError()
 
-            _log.info(f"token_verified user_id={user_id} org_id={org_id}")
+            _log.info("token_verified", extra={"user_id": user_id, "org_id": org_id})
             return AuthUser(user_id=user_id, org_id=org_id)
 
-        except (JWTError, AuthenticationError, OrganizationRequiredError):
+        except (PyJWTError, AuthenticationError, OrganizationRequiredError):
             raise
         except Exception as e:
-            raise AuthenticationError(f"Invalid token: {e}") from e
+            _log.warning("token_verification_unexpected_error", extra={"error": str(e)})
+            raise AuthenticationError("Authentication failed") from e
 
 
 def _assert_implements_protocol() -> None:
