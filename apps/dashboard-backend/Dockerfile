@@ -25,6 +25,7 @@ COPY apps/dashboard-backend/entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
 
 ENV UV_CACHE_DIR=/tmp/uv-cache
+ENV UV_FROZEN=1
 RUN adduser --system --no-create-home --group appuser
 USER appuser
 
