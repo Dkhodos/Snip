@@ -45,3 +45,9 @@ variable "manage_secrets" {
   type        = bool
   default     = false
 }
+
+variable "secret_version_destroy_ttl" {
+  description = "Duration before a DISABLED secret version is automatically destroyed (e.g. '86400s' = 1 day). Set to null to never auto-destroy disabled versions."
+  type        = string
+  default     = "86400s"
+}

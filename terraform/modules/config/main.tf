@@ -126,6 +126,10 @@ resource "google_secret_manager_secret" "env_secrets" {
     auto {}
   }
 
+  # Auto-destroy disabled versions after TTL. Pair with disabling old versions
+  # in CI when pushing new secret values to keep at most N active versions.
+  version_destroy_ttl = var.secret_version_destroy_ttl
+
   labels = {
     env     = var.environment
     managed = "config-module"
@@ -139,6 +143,8 @@ resource "google_secret_manager_secret" "global_secrets" {
   replication {
     auto {}
   }
+
+  version_destroy_ttl = var.secret_version_destroy_ttl
 
   labels = {
     managed = "config-module"
