@@ -1,0 +1,53 @@
+name: Storage Package CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "packages/storage/**"
+      - "uv.lock"
+      - "pyproject.toml"
+      - ".github/workflows/storage.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "packages/storage/**"
+      - "uv.lock"
+      - "pyproject.toml"
+      - ".github/workflows/storage.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_SYSTEM_PYTHON: 1
+  FORCE_COLOR: 1
+
+jobs:
+  ci:
+    name: Lint, Type Check & Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: astral-sh/setup-uv@v8.0.0
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Lint
+        run: make storage:lint
+
+      - name: Type Check
+        run: make storage:type:check
+
+      - name: Unit Tests
+        run: make storage:test:unit

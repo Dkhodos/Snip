@@ -45,6 +45,13 @@ repos:
         files: ^packages/queue/.*\.py$
         pass_filenames: false
 
+      - id: lint-snip-storage
+        name: "lint: snip-storage"
+        entry: make storage:lint
+        language: system
+        files: ^packages/storage/.*\.py$
+        pass_filenames: false
+
       - id: lint-click-worker
         name: "lint: click-worker"
         entry: make click-worker:lint
@@ -107,6 +114,13 @@ repos:
         entry: make queue:type:check
         language: system
         files: ^packages/queue/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-snip-storage
+        name: "type-check: snip-storage"
+        entry: make storage:type:check
+        language: system
+        files: ^packages/storage/.*\.py$
         pass_filenames: false
 
       - id: typecheck-click-worker

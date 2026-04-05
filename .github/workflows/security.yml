@@ -139,6 +139,7 @@ jobs:
             packages/email/src \
             packages/logger/src \
             packages/queue/src \
+            packages/storage/src \
             --severity-level medium \
             --confidence-level medium \
             -x '*/tests/*' \
