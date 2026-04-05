@@ -1,6 +1,14 @@
 // @ts-check
-/** @param {import('@actions/github-script').AsyncFunctionArguments & { pollInterval: number, timeout: number }} args */
-export default async ({ github, context, core, pollInterval, timeout }) => {
+/** @param {import('@actions/github-script').AsyncFunctionArguments & { pollInterval: number, timeout: number, onFailure: string }} args */
+export default async ({ github, context, core, pollInterval, timeout, onFailure = 'skip' }) => {
+  /** @param {string} message */
+  const handleFailure = (message) => {
+    if (onFailure === 'fail') {
+      core.setFailed(message);
+    } else {
+      core.warning(`${message} (skipping — set on-failure: fail to block)`);
+    }
+  };
   const deployWorkflows = [
     'Dashboard Frontend CI',
     'Dashboard Backend CI',
@@ -31,7 +39,7 @@ export default async ({ github, context, core, pollInterval, timeout }) => {
 
   while (pending.size > 0) {
     if (Date.now() - start > timeout) {
-      core.setFailed('Timed out waiting for deploy workflows (10 min).');
+      handleFailure(`Timed out waiting for deploy workflows (${timeout / 1000}s).`);
       return;
     }
 
@@ -43,7 +51,7 @@ export default async ({ github, context, core, pollInterval, timeout }) => {
       if (run.status === 'completed') {
         pending.delete(runId);
         if (run.conclusion !== 'success') {
-          core.setFailed(`${run.name} finished with conclusion: ${run.conclusion}`);
+          handleFailure(`${run.name} finished with conclusion: ${run.conclusion}`);
           return;
         }
         core.info(`${run.name} succeeded.`);

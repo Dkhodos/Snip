@@ -8,6 +8,9 @@ inputs:
   timeout:
     description: Maximum seconds to wait
     default: "600"
+  on-failure:
+    description: What to do when the Migrate workflow fails — "fail" or "skip"
+    default: "skip"
 
 runs:
   using: composite
@@ -21,4 +24,5 @@ runs:
             github, context, core,
             pollInterval: ${{ inputs.poll-interval }} * 1000,
             timeout: ${{ inputs.timeout }} * 1000,
+            onFailure: '${{ inputs.on-failure }}',
           })

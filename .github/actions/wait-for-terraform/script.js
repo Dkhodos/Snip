@@ -1,6 +1,14 @@
 // @ts-check
-/** @param {import('@actions/github-script').AsyncFunctionArguments & { pollInterval: number, timeout: number }} args */
-export default async ({ github, context, core, pollInterval, timeout }) => {
+/** @param {import('@actions/github-script').AsyncFunctionArguments & { pollInterval: number, timeout: number, onFailure: string }} args */
+export default async ({ github, context, core, pollInterval, timeout, onFailure = 'skip' }) => {
+  /** @param {string} message */
+  const handleFailure = (message) => {
+    if (onFailure === 'fail') {
+      core.setFailed(message);
+    } else {
+      core.warning(`${message} (skipping — set on-failure: fail to block)`);
+    }
+  };
   const owner = context.repo.owner;
   const repo = context.repo.repo;
   const sha = context.sha;
@@ -29,12 +37,12 @@ export default async ({ github, context, core, pollInterval, timeout }) => {
         core.info('Terraform CI succeeded — proceeding with deploy.');
         return;
       }
-      core.setFailed(`Terraform CI finished with conclusion: ${run.conclusion}`);
+      handleFailure(`Terraform CI finished with conclusion: ${run.conclusion}`);
       return;
     }
 
     if (Date.now() - start > timeout) {
-      core.setFailed('Timed out waiting for Terraform CI (10 min).');
+      handleFailure(`Timed out waiting for Terraform CI (${timeout / 1000}s).`);
       return;
     }
 
