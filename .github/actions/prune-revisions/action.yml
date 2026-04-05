@@ -16,23 +16,13 @@ runs:
   using: composite
   steps:
     - name: Prune old revisions
-      shell: bash
-      run: |
-        REVISIONS=$(gcloud run revisions list \
-          --service="${{ inputs.service }}" \
-          --region="${{ inputs.region }}" \
-          --sort-by="~creationTimestamp" \
-          --format="value(name)" 2>/dev/null \
-          | tail -n +$(( ${{ inputs.keep }} + 1 )))
-
-        if [ -z "$REVISIONS" ]; then
-          echo "No revisions to prune (keeping ${{ inputs.keep }})"
-          exit 0
-        fi
-
-        for rev in $REVISIONS; do
-          echo "Pruning revision: $rev"
-          gcloud run revisions delete "$rev" \
-            --region="${{ inputs.region }}" \
-            --quiet 2>/dev/null || true
-        done
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const { default: script } = await import('${{ github.workspace }}/.github/actions/prune-revisions/script.js')
+          await script({
+            core,
+            service: '${{ inputs.service }}',
+            region: '${{ inputs.region }}',
+            keep: ${{ inputs.keep }},
+          })
