@@ -118,3 +118,9 @@ jobs:
             IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-backend:${{ github.sha }}" \
             SERVICE="${{ env.SERVICE }}" \
             REGION="${{ env.REGION }}"
+
+      - name: Prune old revisions
+        uses: ./.github/actions/prune-revisions
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}

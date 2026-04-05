@@ -129,3 +129,9 @@ jobs:
             SERVICE="${{ env.SERVICE }}" \
             REGION="${{ env.REGION }}" \
             BACKEND_URL="${{ steps.backend_url.outputs.url }}"
+
+      - name: Prune old revisions
+        uses: ./.github/actions/prune-revisions
+        with:
+          service: ${{ env.SERVICE }}
+          region: ${{ env.REGION }}

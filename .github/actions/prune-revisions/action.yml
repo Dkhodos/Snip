@@ -1,0 +1,38 @@
+name: Prune Cloud Run Revisions
+description: Deletes old Cloud Run revisions, keeping the most recent N
+
+inputs:
+  service:
+    description: Cloud Run service name
+    required: true
+  region:
+    description: GCP region
+    required: true
+  keep:
+    description: Number of most recent revisions to keep
+    default: "3"
+
+runs:
+  using: composite
+  steps:
+    - name: Prune old revisions
+      shell: bash
+      run: |
+        REVISIONS=$(gcloud run revisions list \
+          --service="${{ inputs.service }}" \
+          --region="${{ inputs.region }}" \
+          --sort-by="~creationTimestamp" \
+          --format="value(name)" 2>/dev/null \
+          | tail -n +$(( ${{ inputs.keep }} + 1 )))
+
+        if [ -z "$REVISIONS" ]; then
+          echo "No revisions to prune (keeping ${{ inputs.keep }})"
+          exit 0
+        fi
+
+        for rev in $REVISIONS; do
+          echo "Pruning revision: $rev"
+          gcloud run revisions delete "$rev" \
+            --region="${{ inputs.region }}" \
+            --quiet 2>/dev/null || true
+        done
