@@ -6,12 +6,10 @@ from dashboard_backend.dependencies import (
     get_clicks_manager,
     get_feature_flag_manager,
     get_link_manager,
-    get_seed_manager,
 )
 from dashboard_backend.managers.clicks_manager import ClicksManager
 from dashboard_backend.managers.feature_flag_manager import FeatureFlagManager
 from dashboard_backend.managers.link_manager import LinkManager
-from dashboard_backend.managers.seed_manager import SeedManager
 
 
 class TestManagerFactories:
@@ -27,7 +25,3 @@ class TestManagerFactories:
     def test_get_feature_flag_manager(self) -> None:
         manager = get_feature_flag_manager(MagicMock())
         assert isinstance(manager, FeatureFlagManager)
-
-    def test_get_seed_manager(self) -> None:
-        manager = get_seed_manager(MagicMock(), MagicMock())
-        assert isinstance(manager, SeedManager)
