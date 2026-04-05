@@ -1,0 +1,69 @@
+name: E2E Tests
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - "Dashboard Frontend CI"
+      - "Dashboard Backend CI"
+      - "Redirect Service CI"
+    types: [completed]
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  e2e:
+    name: Run E2E & System Tests
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    permissions:
+      contents: read
+
+    env:
+      E2E_BASE_URL: https://app.pre-prod.snip-app.win
+      E2E_API_URL: https://api.pre-prod.snip-app.win
+      E2E_REDIRECT_URL: https://r.pre-prod.snip-app.win
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: apps/e2e/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: apps/e2e
+        run: pnpm install
+
+      - name: Install Playwright browsers
+        working-directory: apps/e2e
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run tests
+        working-directory: apps/e2e
+        run: pnpm test
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: apps/e2e/playwright-report/
+          retention-days: 14

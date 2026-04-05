@@ -1,0 +1,19 @@
+{
+  "name": "@snip/e2e",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "playwright test",
+    "test:e2e": "playwright test --project=e2e",
+    "test:system": "playwright test --project=system",
+    "test:setup": "playwright test --project=setup",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@clerk/backend": "^1.0.0",
+    "@clerk/testing": "^2.0.8",
+    "@playwright/test": "^1.50.0",
+    "dotenv": "^16.0.0"
+  }
+}
