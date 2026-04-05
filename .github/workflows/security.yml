@@ -61,13 +61,10 @@ jobs:
           python-version: "3.12"
 
       - name: Export requirements from uv lockfile
-        run: uv export --no-hashes --all-packages --frozen > /tmp/requirements.txt
-
-      - name: Install pip-audit
-        run: uv tool install pip-audit
+        run: uv export --no-hashes --all-packages --frozen | grep -v '^-e ' | grep -v '^    #' | grep -v '^#' | grep -v '^$' > /tmp/requirements.txt
 
       - name: Run pip-audit
-        run: pip-audit -r /tmp/requirements.txt --desc || true
+        run: uv run pip-audit -r /tmp/requirements.txt --desc || true
 
       - name: Summary
         if: always()

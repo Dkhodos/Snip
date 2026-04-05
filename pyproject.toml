@@ -4,7 +4,10 @@ version = "0.1.0"
 requires-python = ">=3.12"
 
 [dependency-groups]
-dev = ["checkov>=3"]
+dev = [
+    "checkov>=3",
+    "pip-audit>=2.10.0",
+]
 
 [tool.uv.workspace]
 members = ["apps/dashboard-backend", "apps/redirect-service", "apps/click-worker", "packages/*"]
