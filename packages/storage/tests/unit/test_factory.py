@@ -1,11 +1,15 @@
 """Tests for the storage client factory."""
 
+from unittest.mock import patch
+
 import pytest
 
 from snip_storage.factory import create_storage_client
 from snip_storage.provider import StorageProvider
 from snip_storage.providers.gcs.client import GcsStorageClient
 from snip_storage.providers.minio.client import MinioStorageClient
+
+_GCS_CLIENT_PATH = "snip_storage.providers.gcs.client.gcs.Client"
 
 
 class TestCreateStorageClient:
@@ -31,7 +35,8 @@ class TestCreateStorageClient:
             create_storage_client(StorageProvider.MINIO, endpoint="localhost:9000", access_key="a")
 
     def test_gcs_provider_returns_gcs_client(self) -> None:
-        client = create_storage_client(StorageProvider.GCS, project_id="my-project")
+        with patch(_GCS_CLIENT_PATH):
+            client = create_storage_client(StorageProvider.GCS, project_id="my-project")
         assert isinstance(client, GcsStorageClient)
 
     def test_gcs_without_project_id_raises(self) -> None:
