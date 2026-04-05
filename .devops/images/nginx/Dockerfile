@@ -1,3 +1,3 @@
 FROM nginx:alpine
 
-RUN rm -f /etc/nginx/conf.d/default.conf
+RUN apk upgrade --no-cache && rm -f /etc/nginx/conf.d/default.conf
