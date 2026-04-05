@@ -95,9 +95,41 @@ jobs:
         if: steps.plan.outcome == 'failure'
         run: exit 1
 
+  scan:
+    name: Checkov Security Scan
+    runs-on: ubuntu-latest
+    if: >-
+      (github.event_name == 'pull_request') ||
+      (github.ref == 'refs/heads/main' && github.event_name == 'push')
+    needs: []
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Checkov
+        run: pip install checkov
+
+      - name: Run Checkov
+        working-directory: terraform
+        run: |
+          checkov \
+            --directory . \
+            --framework terraform \
+            --output cli \
+            --output github_failed_only \
+            --soft-fail-on LOW \
+            --compact
+
   apply:
     name: Terraform Apply
     runs-on: ubuntu-latest
+    needs: [scan]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: pre-prod
     permissions:
