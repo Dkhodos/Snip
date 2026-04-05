@@ -51,3 +51,22 @@ resource "google_artifact_registry_repository" "docker" {
 
   depends_on = [google_project_service.apis["artifactregistry.googleapis.com"]]
 }
+
+# Artifact Registry repository for shared base Docker images (environment-agnostic)
+resource "google_artifact_registry_repository" "base" {
+  location      = var.region
+  repository_id = "snip-base"
+  format        = "DOCKER"
+  description   = "Shared base Docker images for Snip"
+
+  cleanup_policies {
+    id     = "keep-recent-versions"
+    action = "KEEP"
+    most_recent_versions {
+      keep_count = var.image_versions_to_keep
+    }
+  }
+  cleanup_policy_dry_run = false
+
+  depends_on = [google_project_service.apis["artifactregistry.googleapis.com"]]
+}
