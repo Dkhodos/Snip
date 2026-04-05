@@ -10,7 +10,7 @@ resource "google_bigquery_dataset" "analytics" {
 resource "google_bigquery_table" "click_events" {
   dataset_id          = google_bigquery_dataset.analytics.dataset_id
   table_id            = "click_events"
-  deletion_protection = false
+  deletion_protection = true
 
   time_partitioning {
     type  = "DAY"

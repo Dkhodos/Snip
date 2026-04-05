@@ -7,7 +7,7 @@ resource "random_password" "db_password" {
 # Cloud SQL instance
 resource "google_sql_database_instance" "postgres" {
   name             = "snip-db-${var.environment}-${var.region}"
-  database_version = "POSTGRES_15"
+  database_version = "POSTGRES_17"
   region           = var.region
 
   settings {
@@ -19,10 +19,49 @@ resource "google_sql_database_instance" "postgres" {
     ip_configuration {
       ipv4_enabled    = false
       private_network = var.vpc_id
+      ssl_mode        = "ENCRYPTED_ONLY"
     }
 
     backup_configuration {
-      enabled = false
+      enabled                        = true
+      point_in_time_recovery_enabled = true
+    }
+
+    database_flags {
+      name  = "log_checkpoints"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_connections"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_disconnections"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_lock_waits"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_hostname"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_min_error_statement"
+      value = "error"
+    }
+    database_flags {
+      name  = "cloudsql.enable_pgaudit"
+      value = "on"
+    }
+    database_flags {
+      name  = "log_statement"
+      value = "all"
+    }
+    database_flags {
+      name  = "log_duration"
+      value = "on"
     }
   }
 

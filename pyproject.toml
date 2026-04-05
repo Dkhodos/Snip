@@ -3,5 +3,8 @@ name = "snip"
 version = "0.1.0"
 requires-python = ">=3.12"
 
+[dependency-groups]
+dev = ["checkov>=3"]
+
 [tool.uv.workspace]
 members = ["apps/dashboard-backend", "apps/redirect-service", "apps/click-worker", "packages/*"]

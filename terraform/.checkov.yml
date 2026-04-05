@@ -1,0 +1,24 @@
+skip-check:
+  # --- Not applicable to this architecture ---
+  - CKV_GCP_125  # OIDC trust policy — already scoped to repo via attribute_condition
+  - CKV2_GCP_18  # VPC firewall — Cloud Run uses ingress/IAM, not VPC firewalls
+
+  # --- Intentional IAM design ---
+  - CKV_GCP_117  # roles/editor on Terraform CI SA — intentional for full project management
+  - CKV_GCP_49   # SA impersonation via roles/editor and securityAdmin — required for Terraform CI
+
+  # --- Google-managed encryption is sufficient (CSEK adds key-management overhead) ---
+  - CKV_GCP_80   # BigQuery table CSEK
+  - CKV_GCP_81   # BigQuery dataset CSEK
+  - CKV_GCP_83   # PubSub topic CSEK
+  - CKV_GCP_84   # Artifact Registry CSEK
+
+  # --- Overkill for POC (dedicated log bucket for a single tfstate bucket) ---
+  - CKV_GCP_62   # Bucket access logging
+
+  # --- Checkov false positives ---
+  - CKV_GCP_6    # Wants TRUSTED_CLIENT_CERTIFICATE_REQUIRED — overkill for private-VPC-only DB; ENCRYPTED_ONLY is set
+  - CKV_GCP_79   # Expects POSTGRES_18 which doesn't exist on Cloud SQL yet; we use POSTGRES_17
+
+  # --- Skipped to avoid unnecessary cost (re-enable for production) ---
+  - CKV_GCP_26   # VPC Flow Logs — billed per GB ingested into Cloud Logging

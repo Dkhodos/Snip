@@ -119,6 +119,7 @@ jobs:
         working-directory: terraform
         run: |
           checkov \
+            --config-file .checkov.yml \
             --directory . \
             --framework terraform \
             --output cli \

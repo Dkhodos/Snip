@@ -10,6 +10,8 @@ resource "google_compute_subnetwork" "subnet" {
   ip_cidr_range = var.subnet_cidr
   region        = var.region
   network       = google_compute_network.vpc.id
+
+  private_ip_google_access = true
 }
 
 # Private Service Access (Cloud SQL private IP)
