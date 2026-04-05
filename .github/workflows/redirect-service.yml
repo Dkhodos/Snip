@@ -95,11 +95,20 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push Docker image
-        run: |
-          make redirect-service:build-image \
-            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/redirect-service:${{ github.sha }}" \
-            BASE_REGISTRY="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}"
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: apps/redirect-service/Dockerfile
+          push: true
+          tags: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/redirect-service:${{ github.sha }}
+          build-args: |
+            BASE_REGISTRY=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}
+          cache-from: type=gha,scope=redirect-service
+          cache-to: type=gha,mode=max,scope=redirect-service
 
       - name: Deploy to Cloud Run
         run: |
