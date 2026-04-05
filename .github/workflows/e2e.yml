@@ -27,9 +27,9 @@ jobs:
       contents: read
 
     env:
-      E2E_BASE_URL: https://app.pre-prod.snip-app.win
-      E2E_API_URL: https://api.pre-prod.snip-app.win
-      E2E_REDIRECT_URL: https://r.pre-prod.snip-app.win
+      E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
+      E2E_API_URL: ${{ vars.E2E_API_URL }}
+      E2E_REDIRECT_URL: ${{ vars.E2E_REDIRECT_URL }}
       E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
       E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
