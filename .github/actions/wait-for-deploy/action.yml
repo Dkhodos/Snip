@@ -1,0 +1,24 @@
+name: Wait for Deploy
+description: Waits for all service deploy workflows to complete (if triggered for the same commit)
+
+inputs:
+  poll-interval:
+    description: Seconds between status checks
+    default: "15"
+  timeout:
+    description: Maximum seconds to wait
+    default: "600"
+
+runs:
+  using: composite
+  steps:
+    - name: Wait for Deploy (if triggered)
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const { default: script } = await import('${{ github.workspace }}/.github/actions/wait-for-deploy/script.js')
+          await script({
+            github, context, core,
+            pollInterval: ${{ inputs.poll-interval }} * 1000,
+            timeout: ${{ inputs.timeout }} * 1000,
+          })
