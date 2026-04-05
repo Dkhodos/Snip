@@ -18,8 +18,8 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  e2e:
-    name: Run E2E & System Tests
+  setup:
+    name: Auth Setup
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: pre-prod
@@ -56,14 +56,125 @@ jobs:
         working-directory: apps/e2e
         run: pnpm exec playwright install chromium --with-deps
 
-      - name: Run tests
+      - name: Run auth setup
         working-directory: apps/e2e
-        run: pnpm test
+        run: pnpm test:setup
+
+      - name: Upload auth state
+        uses: actions/upload-artifact@v4
+        with:
+          name: storage-state-${{ github.run_id }}
+          path: apps/e2e/storageState.json
+          retention-days: 1
+
+  e2e:
+    name: E2E Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    permissions:
+      contents: read
+
+    env:
+      E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
+      E2E_API_URL: ${{ vars.E2E_API_URL }}
+      E2E_REDIRECT_URL: ${{ vars.E2E_REDIRECT_URL }}
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: apps/e2e/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: apps/e2e
+        run: pnpm install
+
+      - name: Install Playwright browsers
+        working-directory: apps/e2e
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Download auth state
+        uses: actions/download-artifact@v4
+        with:
+          name: storage-state-${{ github.run_id }}
+          path: apps/e2e
+
+      - name: Run E2E tests
+        working-directory: apps/e2e
+        run: pnpm test:e2e
 
       - name: Upload Playwright report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report-${{ github.run_id }}
+          name: playwright-report-e2e-${{ github.run_id }}
+          path: apps/e2e/playwright-report/
+          retention-days: 14
+
+  system:
+    name: System Tests
+    needs: setup
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    permissions:
+      contents: read
+
+    env:
+      E2E_BASE_URL: ${{ vars.E2E_BASE_URL }}
+      E2E_API_URL: ${{ vars.E2E_API_URL }}
+      E2E_REDIRECT_URL: ${{ vars.E2E_REDIRECT_URL }}
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+      CLERK_PUBLISHABLE_KEY: ${{ secrets.CLERK_PUBLISHABLE_KEY }}
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "pnpm"
+          cache-dependency-path: apps/e2e/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: apps/e2e
+        run: pnpm install
+
+      - name: Install Playwright browsers
+        working-directory: apps/e2e
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Download auth state
+        uses: actions/download-artifact@v4
+        with:
+          name: storage-state-${{ github.run_id }}
+          path: apps/e2e
+
+      - name: Run system tests
+        working-directory: apps/e2e
+        run: pnpm test:system
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-system-${{ github.run_id }}
           path: apps/e2e/playwright-report/
           retention-days: 14
