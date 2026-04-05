@@ -64,8 +64,8 @@ dependency "cloud_run_redirect" {
 }
 
 inputs = {
-  cloudflare_zone_id     = "27a72a4ec5db61b37b966524a1012fef"
-  domain                 = "snip-app.win"
+  cloudflare_zone_id     = get_env("CLOUDFLARE_ZONE_ID")
+  domain                 = get_env("DOMAIN")
   frontend_service_name  = dependency.cloud_run_frontend.outputs.service_name
   backend_service_name   = dependency.cloud_run.outputs.service_name
   redirect_service_name  = dependency.cloud_run_redirect.outputs.service_name

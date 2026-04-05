@@ -1,3 +1,5 @@
+# Cloud Run v2 job with optional VPC, env vars, and secrets.
+
 resource "google_cloud_run_v2_job" "this" {
   name     = "snip-${var.job_name}-${var.environment}"
   location = var.region

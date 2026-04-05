@@ -1,3 +1,5 @@
+# GitHub Actions OIDC federation and CI service accounts.
+
 # Workload Identity Pool
 resource "google_iam_workload_identity_pool" "github" {
   workload_identity_pool_id = "github-pool-${var.environment}"

@@ -1,3 +1,5 @@
+# GCP API enablement, service account, and Artifact Registry.
+
 # APIs to enable
 locals {
   services = [

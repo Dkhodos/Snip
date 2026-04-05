@@ -1,4 +1,5 @@
-# VPC
+# VPC, subnet, and Private Service Access for Cloud SQL.
+
 resource "google_compute_network" "vpc" {
   name                    = "snip-vpc-${var.environment}"
   auto_create_subnetworks = false

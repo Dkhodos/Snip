@@ -1,3 +1,5 @@
+# Cloud SQL PostgreSQL instance with private VPC networking.
+
 # Generate random password for DB user
 resource "random_password" "db_password" {
   length  = 24

@@ -1,3 +1,5 @@
+# Cloud Run v2 service with optional VPC, env vars, secrets, and IAM.
+
 resource "google_cloud_run_v2_service" "this" {
   name     = "snip-${var.service_name}-${var.environment}"
   location = var.region
@@ -70,7 +72,6 @@ resource "google_cloud_run_v2_service" "this" {
       client,
       client_version,
       template[0].containers[0].image,
-      scaling,
     ]
   }
 }
@@ -91,35 +92,4 @@ resource "google_cloud_run_v2_service_iam_member" "invoker" {
   location = var.region
   role     = "roles/run.invoker"
   member   = "serviceAccount:${var.invoker_service_accounts[count.index]}"
-}
-
-# Prune old Cloud Run revisions on every Terraform apply.
-# GCP has no native max_revisions API; this best-effort cleanup runs via gcloud.
-# It only fires when the service is (re)created or revision_versions_to_keep changes.
-resource "null_resource" "prune_revisions" {
-  triggers = {
-    service_name  = google_cloud_run_v2_service.this.name
-    max_revisions = var.revision_versions_to_keep
-  }
-
-  provisioner "local-exec" {
-    command = <<-EOT
-      revisions=$(gcloud run revisions list \
-        --service="${google_cloud_run_v2_service.this.name}" \
-        --region="${var.region}" \
-        --project="${var.project_id}" \
-        --sort-by="~metadata.creationTimestamp" \
-        --format="value(name)" 2>/dev/null \
-        | tail -n +${var.revision_versions_to_keep + 1})
-      for rev in $revisions; do
-        echo "Pruning old Cloud Run revision: $rev"
-        gcloud run revisions delete "$rev" \
-          --region="${var.region}" \
-          --project="${var.project_id}" \
-          --quiet 2>/dev/null || true
-      done
-    EOT
-  }
-
-  depends_on = [google_cloud_run_v2_service.this]
 }

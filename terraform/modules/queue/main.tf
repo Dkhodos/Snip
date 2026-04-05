@@ -1,3 +1,5 @@
+# Pub/Sub topics, push subscription, and dead-letter queue.
+
 # Click events topic
 resource "google_pubsub_topic" "click_events" {
   name = "click-events-${var.environment}"

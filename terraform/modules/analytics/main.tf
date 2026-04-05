@@ -1,3 +1,5 @@
+# BigQuery dataset and click_events table with IAM.
+
 resource "google_bigquery_dataset" "analytics" {
   dataset_id = "snip_analytics_${replace(var.environment, "-", "_")}"
   location   = var.region

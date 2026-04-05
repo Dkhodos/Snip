@@ -16,7 +16,7 @@ dependency "project" {
 }
 
 inputs = {
-  github_org                      = "Dkhodos"
-  github_repo                     = "Snip"
+  github_org                      = get_env("GH_ORG")
+  github_repo                     = get_env("GH_REPO")
   cloud_run_service_account_email = dependency.project.outputs.cloud_run_service_account_email
 }

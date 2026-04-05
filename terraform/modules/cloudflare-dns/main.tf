@@ -1,3 +1,5 @@
+# Cloudflare DNS records and Cloud Run domain mappings.
+
 locals {
   frontend_subdomain = "app.${var.environment}"
   backend_subdomain  = "api.${var.environment}"

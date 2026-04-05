@@ -103,9 +103,3 @@ variable "invoker_service_accounts" {
   type        = list(string)
   default     = []
 }
-
-variable "revision_versions_to_keep" {
-  description = "Number of Cloud Run revisions to retain (most recent N). Older revisions are deleted on Terraform apply via gcloud. Requires gcloud in PATH."
-  type        = number
-  default     = 3
-}

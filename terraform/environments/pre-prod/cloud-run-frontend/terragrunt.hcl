@@ -3,7 +3,7 @@ include "root" {
 }
 
 include "envcommon" {
-  path   = "${dirname(find_in_parent_folders("root.hcl"))}/_envcommon/cloud-run-frontend.hcl"
+  path   = "${dirname(find_in_parent_folders("root.hcl"))}/_envcommon/cloud-run.hcl"
   expose = true
 }
 
