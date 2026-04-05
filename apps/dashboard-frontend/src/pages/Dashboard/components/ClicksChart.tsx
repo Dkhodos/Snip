@@ -68,7 +68,7 @@ export function ClicksChart() {
 									borderRadius: "0.5rem",
 									fontSize: "0.875rem",
 								}}
-								labelFormatter={formatDate}
+								labelFormatter={(label) => formatDate(String(label))}
 							/>
 							<Area
 								type="monotone"
