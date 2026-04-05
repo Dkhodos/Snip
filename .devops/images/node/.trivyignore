@@ -1,0 +1,4 @@
+# CVE-2026-33671 - picomatch ReDoS inside pnpm's own bundled node_modules.
+# Not reachable from application code. Will auto-resolve when pnpm ships
+# with picomatch >= 4.0.4.
+CVE-2026-33671
