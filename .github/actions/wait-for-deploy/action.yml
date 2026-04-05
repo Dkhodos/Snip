@@ -10,7 +10,7 @@ inputs:
     default: "600"
   on-failure:
     description: What to do when a deploy workflow fails — "fail" or "skip"
-    default: "skip"
+    default: "fail"
 
 runs:
   using: composite

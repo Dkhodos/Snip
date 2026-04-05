@@ -12,6 +12,7 @@ on:
       - "Dashboard Frontend CI"
       - "Dashboard Backend CI"
       - "Redirect Service CI"
+      - "Click Worker CI"
     types: [completed]
     branches: [main]
 

@@ -13,6 +13,7 @@ export default async ({ github, context, core, pollInterval, timeout, onFailure 
     'Dashboard Frontend CI',
     'Dashboard Backend CI',
     'Redirect Service CI',
+    'Click Worker CI',
   ];
 
   const owner = context.repo.owner;

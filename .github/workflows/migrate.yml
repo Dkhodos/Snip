@@ -36,6 +36,53 @@ jobs:
     steps:
       - uses: actions/checkout@v6.0.2
 
+      - name: Wait for DB Package CI (if triggered)
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const sha = context.sha;
+            const workflowName = 'DB Package CI';
+
+            const { data: { workflow_runs: runs } } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner, repo, head_sha: sha, event: 'push',
+            });
+            const ciRun = runs.find(r => r.name === workflowName);
+
+            if (!ciRun) {
+              core.info('No DB Package CI run found for this commit — skipping wait.');
+              return;
+            }
+
+            core.info(`Found DB Package CI run #${ciRun.run_number} (${ciRun.status})`);
+            const start = Date.now();
+            const timeout = 600_000;
+            const poll = 15_000;
+
+            while (true) {
+              const { data: run } = await github.rest.actions.getWorkflowRun({
+                owner, repo, run_id: ciRun.id,
+              });
+
+              if (run.status === 'completed') {
+                if (run.conclusion === 'success') {
+                  core.info('DB Package CI succeeded — proceeding with migrations.');
+                  return;
+                }
+                core.setFailed(`DB Package CI finished with conclusion: ${run.conclusion}`);
+                return;
+              }
+
+              if (Date.now() - start > timeout) {
+                core.setFailed(`Timed out waiting for DB Package CI (${timeout / 1000}s).`);
+                return;
+              }
+
+              core.info(`DB Package CI still ${run.status} — waiting ${poll / 1000}s...`);
+              await new Promise(r => setTimeout(r, poll));
+            }
+
       - name: Wait for Terraform (if triggered)
         uses: ./.github/actions/wait-for-terraform
 
