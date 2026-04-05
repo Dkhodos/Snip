@@ -98,7 +98,8 @@ jobs:
       - name: Build and push Docker image
         run: |
           make redirect-service:build-image \
-            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/redirect-service:${{ github.sha }}"
+            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/redirect-service:${{ github.sha }}" \
+            BASE_REGISTRY="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}"
 
       - name: Deploy to Cloud Run
         run: |

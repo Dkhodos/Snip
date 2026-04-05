@@ -97,8 +97,9 @@ clean: ## Remove caches and build artifacts
 #    BACKEND_URL — backend Cloud Run service URL
 # ──────────────────────────────────────────────────────────────
 
-build-image: ## Build and push Docker image (requires IMAGE; optionally VITE_CLERK_PUBLISHABLE_KEY, VITE_API_URL, VITE_REDIRECT_BASE_URL)
+build-image: ## Build and push Docker image (requires IMAGE, BASE_REGISTRY; optionally VITE_CLERK_PUBLISHABLE_KEY, VITE_API_URL, VITE_REDIRECT_BASE_URL)
 	docker build \
+		--build-arg BASE_REGISTRY="$(BASE_REGISTRY)" \
 		--build-arg VITE_CLERK_PUBLISHABLE_KEY="$(VITE_CLERK_PUBLISHABLE_KEY)" \
 		--build-arg VITE_API_URL="$(VITE_API_URL)" \
 		--build-arg VITE_REDIRECT_BASE_URL="$(VITE_REDIRECT_BASE_URL)" \

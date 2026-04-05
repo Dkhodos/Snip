@@ -1,7 +1,6 @@
 # Build stage
-FROM node:25-slim AS builder
-
-RUN npm install -g pnpm@10.17.1
+ARG BASE_REGISTRY
+FROM ${BASE_REGISTRY}/snip-base/node-base:latest AS builder
 
 WORKDIR /app
 
@@ -20,7 +19,7 @@ ARG VITE_REDIRECT_BASE_URL
 RUN pnpm build
 
 # Serve stage
-FROM nginx:alpine
+FROM ${BASE_REGISTRY}/snip-base/nginx-base:latest
 
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY apps/dashboard-frontend/nginx.conf.template /etc/nginx/conf.d/default.conf.template

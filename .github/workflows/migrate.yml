@@ -53,7 +53,8 @@ jobs:
       - name: Build and push migration image
         run: |
           make db:build-image \
-            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/migrate:${{ github.sha }}"
+            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/migrate:${{ github.sha }}" \
+            BASE_REGISTRY="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}"
 
       - name: Update Cloud Run Job image
         run: |

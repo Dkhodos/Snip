@@ -100,7 +100,8 @@ jobs:
       - name: Build and push Docker image
         run: |
           make dashboard-backend:build-image \
-            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-backend:${{ github.sha }}"
+            IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-backend:${{ github.sha }}" \
+            BASE_REGISTRY="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}"
 
       - name: Deploy to Cloud Run
         run: |

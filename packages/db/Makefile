@@ -85,8 +85,9 @@ test\:unit: sync ## Run unit tests with coverage report
 
 IMAGE ?= snip-migrate:latest
 
-build-image: ## Build and push migration Docker image (requires IMAGE)
+build-image: ## Build and push migration Docker image (requires IMAGE, BASE_REGISTRY)
 	docker build \
+		--build-arg BASE_REGISTRY="$(BASE_REGISTRY)" \
 		-f $(ROOT)/packages/db/Dockerfile \
 		-t $(IMAGE) \
 		$(ROOT)

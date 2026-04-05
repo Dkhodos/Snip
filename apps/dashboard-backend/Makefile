@@ -97,8 +97,9 @@ clean: ## Remove caches and build artifacts
 #    REGION   — GCP region, e.g. europe-west1
 # ──────────────────────────────────────────────────────────────
 
-build-image: ## Build and push Docker image (requires IMAGE)
+build-image: ## Build and push Docker image (requires IMAGE, BASE_REGISTRY)
 	docker build \
+		--build-arg BASE_REGISTRY="$(BASE_REGISTRY)" \
 		-t "$(IMAGE)" \
 		-f $(ROOT)/apps/dashboard-backend/Dockerfile \
 		$(ROOT)

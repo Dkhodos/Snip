@@ -108,6 +108,7 @@ jobs:
         run: |
           make dashboard-frontend:build-image \
             IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.REPO }}/dashboard-frontend:${{ github.sha }}" \
+            BASE_REGISTRY="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}" \
             VITE_CLERK_PUBLISHABLE_KEY="${{ steps.config.outputs.VITE_CLERK_PUBLISHABLE_KEY }}" \
             VITE_API_URL="/api" \
             VITE_REDIRECT_BASE_URL="${{ steps.config.outputs.VITE_REDIRECT_BASE_URL }}"
