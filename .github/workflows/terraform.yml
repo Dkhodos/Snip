@@ -34,6 +34,10 @@ jobs:
 
     env:
       WORKING_DIR: terraform/environments/${{ vars.ENVIRONMENT }}
+      GH_ORG: ${{ github.repository_owner }}
+      GH_REPO: ${{ github.event.repository.name }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
 
     steps:
       - uses: actions/checkout@v6.0.2
@@ -139,6 +143,10 @@ jobs:
 
     env:
       WORKING_DIR: terraform/environments/${{ vars.ENVIRONMENT }}
+      GH_ORG: ${{ github.repository_owner }}
+      GH_REPO: ${{ github.event.repository.name }}
+      DOMAIN: ${{ vars.DOMAIN }}
+      CLOUDFLARE_ZONE_ID: ${{ vars.CLOUDFLARE_ZONE_ID }}
 
     steps:
       - uses: actions/checkout@v6.0.2
