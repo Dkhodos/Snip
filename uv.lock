@@ -21,6 +21,7 @@ members = [
     "snip-og-image",
     "snip-queue",
     "snip-storage",
+    "snip-terraform",
 ]
 
 [[package]]
@@ -3743,6 +3744,20 @@ requires-dist = [
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'" },
 ]
+provides-extras = ["dev"]
+
+[[package]]
+name = "snip-terraform"
+version = "0.1.0"
+source = { editable = "terraform" }
+
+[package.optional-dependencies]
+dev = [
+    { name = "checkov" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "checkov", marker = "extra == 'dev'", specifier = ">=3" }]
 provides-extras = ["dev"]
 
 [[package]]

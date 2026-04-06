@@ -24,7 +24,8 @@ PROJECTS := \
 	queue:packages/queue \
 	analytics:packages/analytics \
 	storage:packages/storage \
-	og-image:packages/og-image
+	og-image:packages/og-image \
+	terraform:terraform
 
 # Lookup helper: $(call project_dir,<name>) → directory path
 project_dir = $(patsubst $(1):%,%,$(filter $(1):%,$(PROJECTS)))

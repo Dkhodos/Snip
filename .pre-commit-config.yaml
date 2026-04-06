@@ -158,6 +158,14 @@ repos:
         files: ^apps/dashboard-backend/.*\.py$
         pass_filenames: false
 
+      # ── Terraform: Checkov security scan ─────────────────────
+      - id: checkov-terraform
+        name: "checkov: terraform"
+        entry: make terraform:check
+        language: system
+        files: ^terraform/.*\.(tf|hcl)$
+        pass_filenames: false
+
       # ── Frontend ───────────────────────────────────────────────
       - id: lint-dashboard-frontend
         name: "lint: dashboard-frontend"
