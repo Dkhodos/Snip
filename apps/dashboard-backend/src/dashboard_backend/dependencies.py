@@ -74,8 +74,10 @@ def get_feature_flag_store(
 _storage_client: StorageClient | None = None
 
 
-def get_storage_client() -> StorageClient:
+def get_storage_client() -> StorageClient | None:
     global _storage_client
+    if not settings.storage_provider:
+        return None
     if _storage_client is None:
         _storage_client = create_storage_client(
             StorageProvider(settings.storage_provider),
@@ -88,8 +90,10 @@ def get_storage_client() -> StorageClient:
 
 
 def get_og_image_manager(
-    storage_client: StorageClient = Depends(get_storage_client),
-) -> OgImageManager:
+    storage_client: StorageClient | None = Depends(get_storage_client),
+) -> OgImageManager | None:
+    if storage_client is None:
+        return None
     return OgImageManager(
         storage_client=storage_client,
         bucket=settings.og_image_bucket,

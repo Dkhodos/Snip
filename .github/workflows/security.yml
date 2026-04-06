@@ -61,7 +61,13 @@ jobs:
           python-version: "3.12"
 
       - name: Export requirements from uv lockfile
-        run: uv export --no-hashes --all-packages --frozen | grep -v "^-e " | grep -v "^    #" | grep -v "^#" | grep -v "^$" > /tmp/requirements.txt
+        run: |
+          uv export --no-hashes --all-packages --frozen \
+            | grep -v '^-e ' \
+            | grep -v '^[[:space:]]*#' \
+            | grep -v '^#' \
+            | grep -v '^$' \
+            > /tmp/requirements.txt
 
       - name: Run pip-audit
         run: uv run pip-audit -r /tmp/requirements.txt --desc || true

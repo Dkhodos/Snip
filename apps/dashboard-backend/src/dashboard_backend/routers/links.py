@@ -93,7 +93,7 @@ async def create_link(
     background_tasks: BackgroundTasks,
     user: AuthUser = Depends(get_current_user),
     manager: LinkManager = Depends(get_link_manager),
-    og_manager: OgImageManager = Depends(get_og_image_manager),
+    og_manager: OgImageManager | None = Depends(get_og_image_manager),
 ) -> object:
     link = await manager.create_link(
         org_id=user.org_id,
@@ -102,7 +102,8 @@ async def create_link(
         title=body.title,
         custom_short_code=body.custom_short_code,
     )
-    background_tasks.add_task(_fire_og_generation, og_manager, link)
+    if og_manager is not None:
+        background_tasks.add_task(_fire_og_generation, og_manager, link)
     return link
 
 
@@ -145,11 +146,11 @@ async def update_link(
     background_tasks: BackgroundTasks,
     user: AuthUser = Depends(get_current_user),
     manager: LinkManager = Depends(get_link_manager),
-    og_manager: OgImageManager = Depends(get_og_image_manager),
+    og_manager: OgImageManager | None = Depends(get_og_image_manager),
 ) -> object:
     update_data = body.model_dump(exclude_unset=True)
     updated = await manager.update_link(link_id, user.org_id, **update_data)
-    if any(f in update_data for f in ("title", "target_url")):
+    if og_manager is not None and any(f in update_data for f in ("title", "target_url")):
         background_tasks.add_task(_fire_og_generation, og_manager, updated)
     return updated
 
