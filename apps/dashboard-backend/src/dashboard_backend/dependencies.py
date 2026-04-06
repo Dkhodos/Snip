@@ -7,6 +7,9 @@ from snip_db.stores.click_event_store import ClickEventStore
 from snip_db.stores.feature_flag_store import FeatureFlagStore
 from snip_db.stores.link_store import LinkStore
 from snip_email import EmailClient, EmailProvider, create_email_client
+from snip_og_image import OgImageManager
+from snip_storage import StorageProvider, create_storage_client
+from snip_storage.protocol import StorageClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from dashboard_backend.config import settings
@@ -64,6 +67,35 @@ def get_feature_flag_store(
     session: AsyncSession = Depends(get_session),
 ) -> FeatureFlagStore:
     return FeatureFlagStore(session)
+
+
+# --- Storage ---
+
+_storage_client: StorageClient | None = None
+
+
+def get_storage_client() -> StorageClient:
+    global _storage_client
+    if _storage_client is None:
+        _storage_client = create_storage_client(
+            StorageProvider(settings.storage_provider),
+            endpoint=settings.storage_endpoint,
+            access_key=settings.storage_access_key,
+            secret_key=settings.storage_secret_key,
+            project_id=settings.gcp_project_id,
+        )
+    return _storage_client
+
+
+def get_og_image_manager(
+    storage_client: StorageClient = Depends(get_storage_client),
+) -> OgImageManager:
+    return OgImageManager(
+        storage_client=storage_client,
+        bucket=settings.og_image_bucket,
+        redirect_base_url=settings.redirect_base_url,
+        og_image_public_url_base=settings.og_image_public_url_base,
+    )
 
 
 # --- Managers ---

@@ -7,6 +7,8 @@ dependencies = [
     "snip-email",
     "snip-auth",
     "snip-logger",
+    "snip-storage",
+    "snip-og-image",
     "fastapi[standard]",
     "pydantic-settings",
     "httpx",
@@ -21,6 +23,8 @@ snip-db = { workspace = true }
 snip-email = { workspace = true }
 snip-auth = { workspace = true }
 snip-logger = { workspace = true }
+snip-storage = { workspace = true }
+snip-og-image = { workspace = true }
 
 [tool.ruff]
 target-version = "py312"

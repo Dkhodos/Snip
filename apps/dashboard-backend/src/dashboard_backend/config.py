@@ -23,6 +23,16 @@ class Settings(BaseSettings):
     click_threshold: int = 100
     allowed_origins: str = "http://localhost:5173"
 
+    # Storage (OG image generation)
+    storage_provider: str = ""
+    storage_endpoint: str = ""
+    storage_access_key: str = ""
+    storage_secret_key: str = ""
+    gcp_project_id: str = ""
+    og_image_bucket: str = ""
+    og_image_public_url_base: str = ""
+    redirect_base_url: str = ""
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
     @property

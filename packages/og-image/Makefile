@@ -1,5 +1,5 @@
 # ──────────────────────────────────────────────────────────────
-#  dashboard-backend Makefile
+#  snip-og-image Makefile
 #
 #  All commands use `uv` for dependency management.
 #  The workspace venv lives at the monorepo root (../../.venv).
@@ -9,23 +9,23 @@ SHELL        := /bin/bash
 ROOT         := $(shell git rev-parse --show-toplevel)
 VENV         := $(ROOT)/.venv
 UV           := uv
-PYTHON       := $(UV) run --package dashboard-backend python
-PYTEST       := $(UV) run --package dashboard-backend pytest
-RUFF         := $(UV) run --package dashboard-backend ruff
-PYRIGHT      := $(UV) run --package dashboard-backend pyright
+PYTHON       := $(UV) run --package snip-og-image python
+PYTEST       := $(UV) run --package snip-og-image pytest
+RUFF         := $(UV) run --package snip-og-image ruff
+PYRIGHT      := $(UV) run --package snip-og-image pyright
 
 # Sentinel file to track when deps were last synced
-SYNC_STAMP   := $(VENV)/.dashboard-backend-synced
+SYNC_STAMP   := $(VENV)/.snip-og-image-synced
 
 # Source files for change detection
-SRC          := src/dashboard_backend
+SRC          := src/snip_og_image
 TESTS        := tests
 
 # ──────────────────────────────────────────────────────────────
 #  Phony targets
 # ──────────────────────────────────────────────────────────────
 
-.PHONY: help venv install sync lint lint\:fix type\:check test\:unit clean build-image deploy dev
+.PHONY: help venv install sync lint lint\:fix type\:check test\:unit clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_:\\]+:.*?## ' $(MAKEFILE_LIST) | \
@@ -51,16 +51,6 @@ $(SYNC_STAMP): pyproject.toml $(ROOT)/uv.lock | $(VENV)/bin/python
 	@touch $(SYNC_STAMP)
 
 sync: $(SYNC_STAMP) ## Ensure deps are up-to-date (fast no-op if nothing changed)
-
-# ──────────────────────────────────────────────────────────────
-#  Local dev server
-# ──────────────────────────────────────────────────────────────
-
-dev: sync ## Run local dev server with hot reload
-	$(UV) run --package dashboard-backend uvicorn dashboard_backend.main:app \
-		--reload \
-		--host 0.0.0.0 \
-		--port 8000
 
 # ──────────────────────────────────────────────────────────────
 #  Lint
@@ -97,26 +87,3 @@ clean: ## Remove caches and build artifacts
 	find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 	rm -rf .pytest_cache .ruff_cache htmlcov .coverage dist build
 	rm -f $(SYNC_STAMP)
-
-# ──────────────────────────────────────────────────────────────
-#  Docker / Cloud Run
-#
-#  Required variables (pass on command line or export to env):
-#    IMAGE    — full image ref, e.g. us-docker.pkg.dev/project/repo/dashboard-backend:sha
-#    SERVICE  — Cloud Run service name, e.g. snip-backend-pre-prod
-#    REGION   — GCP region, e.g. europe-west1
-# ──────────────────────────────────────────────────────────────
-
-build-image: ## Build and push Docker image (requires IMAGE, BASE_REGISTRY)
-	docker build \
-		--build-arg BASE_REGISTRY="$(BASE_REGISTRY)" \
-		-t "$(IMAGE)" \
-		-f $(ROOT)/apps/dashboard-backend/Dockerfile \
-		$(ROOT)
-	docker push "$(IMAGE)"
-
-deploy: ## Deploy image to Cloud Run (requires IMAGE, SERVICE, REGION)
-	gcloud run deploy $(SERVICE) \
-		--image "$(IMAGE)" \
-		--region $(REGION) \
-		--quiet

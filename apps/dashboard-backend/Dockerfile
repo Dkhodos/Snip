@@ -11,6 +11,8 @@ COPY packages/db/ packages/db/
 COPY packages/email/ packages/email/
 COPY packages/auth/ packages/auth/
 COPY packages/logger/ packages/logger/
+COPY packages/storage/ packages/storage/
+COPY packages/og-image/ packages/og-image/
 
 # Copy the app
 COPY apps/dashboard-backend/ apps/dashboard-backend/

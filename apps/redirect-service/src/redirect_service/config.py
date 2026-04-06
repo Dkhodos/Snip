@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     gcp_project_id: str = ""
     click_topic: str = "click-events"
 
+    # OG image
+    og_image_base_url: str = ""
+    redirect_base_url: str = ""
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
     @property

@@ -40,4 +40,12 @@ export class LinksApi extends BaseApi {
 	async remove(id: string): Promise<void> {
 		return this.delete(`/links/${id}`);
 	}
+
+	async generateOgImage(id: string): Promise<{ og_image_url: string }> {
+		return this.post<{ og_image_url: string }>(`/links/${id}/og-image`);
+	}
+
+	async getOgImageUrl(id: string): Promise<{ og_image_url: string }> {
+		return this.get<{ og_image_url: string }>(`/links/${id}/og-image-url`);
+	}
 }

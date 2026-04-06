@@ -18,6 +18,8 @@ class RedirectResult:
     target_url: str
     click_count: int
     created_by: Optional[str]
+    title: Optional[str] = None
+    short_code: str = ""
 
 
 class RedirectManager:
@@ -73,6 +75,8 @@ class RedirectManager:
             target_url=link.target_url,
             click_count=link.click_count,
             created_by=link.created_by,
+            title=link.title,
+            short_code=short_code,
         )
         _log.info("redirect_resolved", short_code=short_code, click_count=result.click_count)
         return result

@@ -23,7 +23,8 @@ PROJECTS := \
 	logger:packages/logger \
 	queue:packages/queue \
 	analytics:packages/analytics \
-	storage:packages/storage
+	storage:packages/storage \
+	og-image:packages/og-image
 
 # Lookup helper: $(call project_dir,<name>) → directory path
 project_dir = $(patsubst $(1):%,%,$(filter $(1):%,$(PROJECTS)))

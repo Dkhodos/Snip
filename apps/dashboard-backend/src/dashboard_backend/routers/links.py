@@ -5,12 +5,17 @@ from typing import Optional
 from urllib.parse import urlparse
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 from pydantic import BaseModel, Field, field_validator
 from snip_auth import AuthUser
+from snip_db.models import Link
+from snip_logger import get_logger
+from snip_og_image import OgImageManager
 
-from dashboard_backend.dependencies import get_current_user, get_link_manager
+from dashboard_backend.dependencies import get_current_user, get_link_manager, get_og_image_manager
 from dashboard_backend.managers.link_manager import LinkManager
+
+_log = get_logger("dashboard-backend", log_prefix="LinksRouter")
 
 router = APIRouter(prefix="/links", tags=["links"])
 
@@ -75,19 +80,30 @@ class LinkListResponse(BaseModel):
     limit: int
 
 
+async def _fire_og_generation(og_manager: OgImageManager, link: Link) -> None:
+    try:
+        await og_manager.generate_and_upload(link)
+    except Exception:
+        _log.warning("og_image_generation_failed", exc_info=True)
+
+
 @router.post("", response_model=LinkResponse, status_code=201)
 async def create_link(
     body: CreateLinkRequest,
+    background_tasks: BackgroundTasks,
     user: AuthUser = Depends(get_current_user),
     manager: LinkManager = Depends(get_link_manager),
+    og_manager: OgImageManager = Depends(get_og_image_manager),
 ) -> object:
-    return await manager.create_link(
+    link = await manager.create_link(
         org_id=user.org_id,
         user_id=user.user_id,
         target_url=body.target_url,
         title=body.title,
         custom_short_code=body.custom_short_code,
     )
+    background_tasks.add_task(_fire_og_generation, og_manager, link)
+    return link
 
 
 @router.get("", response_model=LinkListResponse)
@@ -126,11 +142,16 @@ async def get_link(
 async def update_link(
     link_id: UUID,
     body: UpdateLinkRequest,
+    background_tasks: BackgroundTasks,
     user: AuthUser = Depends(get_current_user),
     manager: LinkManager = Depends(get_link_manager),
+    og_manager: OgImageManager = Depends(get_og_image_manager),
 ) -> object:
     update_data = body.model_dump(exclude_unset=True)
-    return await manager.update_link(link_id, user.org_id, **update_data)
+    updated = await manager.update_link(link_id, user.org_id, **update_data)
+    if any(f in update_data for f in ("title", "target_url")):
+        background_tasks.add_task(_fire_og_generation, og_manager, updated)
+    return updated
 
 
 @router.delete("/{link_id}", status_code=204)

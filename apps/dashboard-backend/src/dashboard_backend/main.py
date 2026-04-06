@@ -17,7 +17,7 @@ from dashboard_backend.exceptions import (
     LinkNotFoundError,
     ShortCodeCollisionError,
 )
-from dashboard_backend.routers import clicks, flags, links, stats
+from dashboard_backend.routers import clicks, flags, links, og_image, stats
 
 
 @asynccontextmanager
@@ -82,6 +82,7 @@ async def invalid_sort_field_handler(request: Request, exc: InvalidSortFieldErro
 
 # Routers
 app.include_router(links.router)
+app.include_router(og_image.router)
 app.include_router(clicks.router)
 app.include_router(flags.router)
 app.include_router(stats.router)

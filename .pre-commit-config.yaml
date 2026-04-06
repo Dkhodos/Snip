@@ -52,6 +52,13 @@ repos:
         files: ^packages/storage/.*\.py$
         pass_filenames: false
 
+      - id: lint-snip-og-image
+        name: "lint: snip-og-image"
+        entry: make og-image:lint
+        language: system
+        files: ^packages/og-image/.*\.py$
+        pass_filenames: false
+
       - id: lint-click-worker
         name: "lint: click-worker"
         entry: make click-worker:lint
@@ -121,6 +128,13 @@ repos:
         entry: make storage:type:check
         language: system
         files: ^packages/storage/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-snip-og-image
+        name: "type-check: snip-og-image"
+        entry: make og-image:type:check
+        language: system
+        files: ^packages/og-image/.*\.py$
         pass_filenames: false
 
       - id: typecheck-click-worker

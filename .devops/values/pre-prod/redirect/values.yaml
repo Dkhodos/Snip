@@ -1,2 +1,5 @@
 queue_provider: gcp_pubsub
 click_topic: click-events-pre-prod
+# OG image meta tags served to social crawlers
+og_image_base_url: "https://storage.googleapis.com/snip-og-images-pre-prod"
+redirect_base_url: "https://r.pre-prod.snip-app.win"
