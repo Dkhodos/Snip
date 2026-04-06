@@ -1,0 +1,83 @@
+name: Deploy All
+
+on:
+  workflow_dispatch:
+    inputs:
+      skip_e2e:
+        description: Skip E2E tests after deployment
+        type: boolean
+        default: false
+
+concurrency:
+  group: deploy-all-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  terraform:
+    name: Infrastructure
+    uses: ./.github/workflows/terraform.yml
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+    secrets: inherit
+
+  migrate:
+    name: DB Migrations
+    needs: terraform
+    uses: ./.github/workflows/migrate.yml
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    secrets: inherit
+
+  deploy-backend:
+    name: Backend
+    needs: migrate
+    uses: ./.github/workflows/dashboard-backend.yml
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    secrets: inherit
+
+  deploy-frontend:
+    name: Frontend
+    needs: terraform
+    uses: ./.github/workflows/dashboard-frontend.yml
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    secrets: inherit
+
+  deploy-redirect:
+    name: Redirect Service
+    needs: migrate
+    uses: ./.github/workflows/redirect-service.yml
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    secrets: inherit
+
+  deploy-click-worker:
+    name: Click Worker
+    needs: terraform
+    uses: ./.github/workflows/click-worker.yml
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    secrets: inherit
+
+  e2e:
+    name: E2E Tests
+    needs: [deploy-backend, deploy-frontend, deploy-redirect, deploy-click-worker]
+    if: ${{ !inputs.skip_e2e }}
+    uses: ./.github/workflows/e2e.yml
+    permissions:
+      contents: read
+      actions: read
+    secrets: inherit
