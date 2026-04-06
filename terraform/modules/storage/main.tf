@@ -1,8 +1,8 @@
 # GCS bucket for OG preview images (publicly readable, written by Cloud Run).
 
-#checkov:skip=CKV_GCP_78:Versioning not needed for generated OG images — they are regenerated on demand
-#checkov:skip=CKV_GCP_114:Bucket must be publicly readable so social crawlers can fetch OG images
 resource "google_storage_bucket" "og_images" {
+  #checkov:skip=CKV_GCP_78:Versioning not needed for generated OG images — they are regenerated on demand
+  #checkov:skip=CKV_GCP_114:Bucket must be publicly readable so social crawlers can fetch OG images
   name          = "snip-og-images-${var.environment}"
   location      = var.region
   storage_class = "STANDARD"
@@ -28,8 +28,8 @@ resource "google_storage_bucket" "og_images" {
 }
 
 # Public read — allows social crawlers to fetch OG images directly
-#checkov:skip=CKV_GCP_28:Public read is intentional — social crawlers fetch OG images via direct URL
 resource "google_storage_bucket_iam_member" "public_read" {
+  #checkov:skip=CKV_GCP_28:Public read is intentional — social crawlers fetch OG images via direct URL
   bucket = google_storage_bucket.og_images.name
   role   = "roles/storage.objectViewer"
   member = "allUsers"
