@@ -141,8 +141,8 @@ export class LinksPage extends BasePage {
   }
 
   async closeOgDialog(): Promise<void> {
-    const dialog = this.getOgDialog();
-    await dialog.getByRole('button', { name: /close/i }).click();
+    // Press Escape to close — avoids ambiguity between X button and footer Close button
+    await this.page.keyboard.press('Escape');
     await this.page.waitForSelector('[role="dialog"]', { state: 'hidden' });
   }
 

@@ -84,16 +84,19 @@ test.describe('OG image preview', () => {
 
     await linksPage.openOgPreview(shortCode);
     await linksPage.waitForOgImageLoaded();
-    const srcBefore = await linksPage.getOgImageSrc();
 
     await linksPage.clickRegenerate();
-    // Wait for the regeneration to complete — image reloads
-    await linksPage.waitForOgImageLoaded();
 
+    // Wait for the cache-bust parameter to appear in the image src
+    const dialog = linksPage.getOgDialog();
+    const img = dialog.locator('img[alt="OG preview"]');
+    await expect(async () => {
+      const src = await img.getAttribute('src');
+      expect(src).toContain('?t=');
+    }).toPass({ timeout: 20_000, intervals: [500, 1_000, 2_000] });
+
+    await linksPage.waitForOgImageLoaded();
     const srcAfter = await linksPage.getOgImageSrc();
-    expect(srcAfter).toBeTruthy();
-    // After regeneration the URL includes a ?t= cache-bust parameter
-    expect(srcAfter).not.toBe(srcBefore);
     expect(srcAfter).toContain('?t=');
 
     await linksPage.closeOgDialog();
@@ -108,7 +111,6 @@ test.describe('OG image preview', () => {
     createdShortCodes.push(shortCode);
 
     await linksPage.openOgPreview(shortCode);
-    await linksPage.waitForOgImageLoaded();
     await linksPage.clickCopyOgUrl();
 
     const clipboardText = await page.evaluate(() => navigator.clipboard.readText());

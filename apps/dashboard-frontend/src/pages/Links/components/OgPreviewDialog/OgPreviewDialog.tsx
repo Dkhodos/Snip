@@ -127,12 +127,7 @@ export function OgPreviewDialog({
 							/>
 							{isGenerating ? "Generating…" : "Regenerate"}
 						</Button>
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={handleCopyUrl}
-							disabled={!imgLoaded || isGenerating}
-						>
+						<Button variant="outline" size="sm" onClick={handleCopyUrl}>
 							<Copy className="mr-2 h-3.5 w-3.5" />
 							{copied ? "Copied!" : "Copy URL"}
 						</Button>
