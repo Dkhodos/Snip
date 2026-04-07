@@ -113,6 +113,44 @@ export class LinksPage extends BasePage {
     await this.page.getByRole('menuitem', { name: /copy url/i }).click();
   }
 
+  // ── OG Preview ──────────────────────────────────────────────────────────────
+
+  async openOgPreview(shortCode: string): Promise<void> {
+    await this.openRowMenu(shortCode);
+    await this.page.getByRole('menuitem', { name: /preview og image/i }).click();
+    await this.page.waitForSelector('[role="dialog"]');
+  }
+
+  getOgDialog() {
+    return this.page.locator('[role="dialog"]').filter({ hasText: /OG Image Preview/i });
+  }
+
+  async waitForOgImageLoaded(): Promise<void> {
+    const dialog = this.getOgDialog();
+    await dialog.locator('img[alt="OG preview"]').waitFor({ state: 'visible', timeout: 20_000 });
+  }
+
+  async clickRegenerate(): Promise<void> {
+    const dialog = this.getOgDialog();
+    await dialog.getByRole('button', { name: /regenerate/i }).click();
+  }
+
+  async clickCopyOgUrl(): Promise<void> {
+    const dialog = this.getOgDialog();
+    await dialog.getByRole('button', { name: /copy url/i }).click();
+  }
+
+  async closeOgDialog(): Promise<void> {
+    const dialog = this.getOgDialog();
+    await dialog.getByRole('button', { name: /close/i }).click();
+    await this.page.waitForSelector('[role="dialog"]', { state: 'hidden' });
+  }
+
+  getOgImageSrc(): Promise<string | null> {
+    const dialog = this.getOgDialog();
+    return dialog.locator('img[alt="OG preview"]').getAttribute('src');
+  }
+
   // ── Pagination ───────────────────────────────────────────────────────────────
 
   async nextPage(): Promise<void> {

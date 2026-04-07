@@ -3486,17 +3486,13 @@ source = { virtual = "." }
 
 [package.dev-dependencies]
 dev = [
-    { name = "checkov" },
     { name = "pip-audit" },
 ]
 
 [package.metadata]
 
 [package.metadata.requires-dev]
-dev = [
-    { name = "checkov", specifier = ">=3" },
-    { name = "pip-audit", specifier = ">=2.10.0" },
-]
+dev = [{ name = "pip-audit", specifier = ">=2.10.0" }]
 
 [[package]]
 name = "snip-analytics"

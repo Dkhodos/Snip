@@ -89,7 +89,10 @@ class TestGcsWrite:
         self, client: GcsStorageClient, mock_gcs: MagicMock
     ) -> None:
         bucket_mock = MagicMock()
-        bucket_mock.reload.side_effect = NotFound("bucket not found")
+        blob = MagicMock()
+        blob.exists.return_value = False
+        blob.upload_from_string.side_effect = NotFound("bucket not found")
+        bucket_mock.blob.return_value = blob
         mock_gcs.bucket.return_value = bucket_mock
 
         with pytest.raises(BucketNotFoundError):
@@ -131,7 +134,9 @@ class TestGcsUpsert:
         self, client: GcsStorageClient, mock_gcs: MagicMock
     ) -> None:
         bucket_mock = MagicMock()
-        bucket_mock.reload.side_effect = NotFound("bucket not found")
+        blob = MagicMock()
+        blob.upload_from_string.side_effect = NotFound("bucket not found")
+        bucket_mock.blob.return_value = blob
         mock_gcs.bucket.return_value = bucket_mock
 
         with pytest.raises(BucketNotFoundError):
@@ -184,7 +189,10 @@ class TestGcsDelete:
         self, client: GcsStorageClient, mock_gcs: MagicMock
     ) -> None:
         bucket_mock = MagicMock()
-        bucket_mock.reload.side_effect = NotFound("bucket not found")
+        blob = MagicMock()
+        blob.exists.return_value = True
+        blob.delete.side_effect = NotFound("bucket not found")
+        bucket_mock.blob.return_value = blob
         mock_gcs.bucket.return_value = bucket_mock
 
         with pytest.raises(BucketNotFoundError):

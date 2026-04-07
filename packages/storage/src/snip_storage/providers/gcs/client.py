@@ -42,49 +42,50 @@ class GcsStorageClient:
         self, bucket: str, key: str, data: bytes, *, content_type: str | None = None
     ) -> None:
         gcs_bucket = self._client.bucket(bucket)
-        try:
-            await asyncio.to_thread(gcs_bucket.reload)
-        except NotFound as exc:
-            raise BucketNotFoundError(bucket) from exc
-
         blob = gcs_bucket.blob(key)
+
         exists = await asyncio.to_thread(blob.exists)
         if exists:
             raise ObjectAlreadyExistsError(bucket, key)
 
-        await asyncio.to_thread(
-            blob.upload_from_string, data, content_type=content_type or "application/octet-stream"
-        )
+        try:
+            await asyncio.to_thread(
+                blob.upload_from_string,
+                data,
+                content_type=content_type or "application/octet-stream",
+            )
+        except NotFound as exc:
+            raise BucketNotFoundError(bucket) from exc
         _log.info("object_written provider=gcs bucket=%s key=%s size=%d", bucket, key, len(data))
 
     async def upsert(
         self, bucket: str, key: str, data: bytes, *, content_type: str | None = None
     ) -> None:
         gcs_bucket = self._client.bucket(bucket)
+        blob = gcs_bucket.blob(key)
+
         try:
-            await asyncio.to_thread(gcs_bucket.reload)
+            await asyncio.to_thread(
+                blob.upload_from_string,
+                data,
+                content_type=content_type or "application/octet-stream",
+            )
         except NotFound as exc:
             raise BucketNotFoundError(bucket) from exc
-
-        blob = gcs_bucket.blob(key)
-        await asyncio.to_thread(
-            blob.upload_from_string, data, content_type=content_type or "application/octet-stream"
-        )
         _log.info("object_upserted provider=gcs bucket=%s key=%s size=%d", bucket, key, len(data))
 
     async def delete(self, bucket: str, key: str) -> None:
         gcs_bucket = self._client.bucket(bucket)
-        try:
-            await asyncio.to_thread(gcs_bucket.reload)
-        except NotFound as exc:
-            raise BucketNotFoundError(bucket) from exc
-
         blob = gcs_bucket.blob(key)
+
         exists = await asyncio.to_thread(blob.exists)
         if not exists:
             raise ObjectNotFoundError(bucket, key)
 
-        await asyncio.to_thread(blob.delete)
+        try:
+            await asyncio.to_thread(blob.delete)
+        except NotFound as exc:
+            raise BucketNotFoundError(bucket) from exc
         _log.info("object_deleted provider=gcs bucket=%s key=%s", bucket, key)
 
 
