@@ -129,6 +129,75 @@ jobs:
 
       - name: Execute migrations
         run: |
-          gcloud run jobs execute ${{ env.JOB }} \
-            --region ${{ env.REGION }} \
-            --wait
+          # Start job asynchronously so we can stream logs while it runs
+          gcloud run jobs execute "$JOB" \
+            --region "$REGION" \
+            --async 2>&1 | tee /tmp/exec_output.txt
+
+          # Extract execution name from output (e.g. "projects/.../executions/my-job-xxxxx")
+          EXECUTION=$(gcloud run jobs executions list \
+            --job="$JOB" --region="$REGION" \
+            --limit=1 --sort-by="~createTime" \
+            --format="value(name)")
+          EXEC_SHORT=$(basename "$EXECUTION")
+          echo "▶ Execution started: $EXEC_SHORT"
+
+          LOG_FILTER="resource.type=\"cloud_run_job\"
+            AND resource.labels.job_name=\"$JOB\"
+            AND labels.\"run.googleapis.com/execution_name\"=\"$EXEC_SHORT\""
+          SEEN_LOGS=""
+
+          # Poll until execution completes, streaming logs on each iteration
+          START_TIME=$SECONDS
+          TIMEOUT=600  # 10 minutes
+
+          while true; do
+            if (( SECONDS - START_TIME > TIMEOUT )); then
+              echo "❌ Timed out after ${TIMEOUT}s waiting for migration to complete"
+              exit 1
+            fi
+
+            STATUS=$(gcloud run jobs executions describe "$EXECUTION" \
+              --region="$REGION" \
+              --format="value(status.conditions.filter(type='Completed').map().extract(status).flatten())")
+
+            # Fetch and display new log entries
+            NEW_LOGS=$(gcloud logging read "$LOG_FILTER" \
+              --project="$PROJECT_ID" \
+              --limit=200 --freshness=10m \
+              --order=asc \
+              --format="value(timestamp, textPayload)" 2>/dev/null || true)
+
+            if [[ -n "$NEW_LOGS" ]]; then
+              # Only print lines we haven't seen yet
+              DIFF=$(comm -13 <(echo "$SEEN_LOGS" | sort) <(echo "$NEW_LOGS" | sort) | sort)
+              if [[ -n "$DIFF" ]]; then
+                echo "$DIFF"
+                SEEN_LOGS="$NEW_LOGS"
+              fi
+            fi
+
+            if [[ "$STATUS" == "True" ]]; then
+              echo "✅ Migrations completed successfully"
+              exit 0
+            fi
+
+            # Check for failure
+            FAILED=$(gcloud run jobs executions describe "$EXECUTION" \
+              --region="$REGION" \
+              --format="value(status.conditions.filter(type='Failed').map().extract(status).flatten())" 2>/dev/null || true)
+
+            if [[ "$FAILED" == "True" ]]; then
+              echo "❌ Migration execution failed"
+              # Print final batch of logs
+              gcloud logging read "$LOG_FILTER" \
+                --project="$PROJECT_ID" \
+                --limit=500 --freshness=15m \
+                --order=asc \
+                --format="value(timestamp, textPayload)" 2>/dev/null || true
+              exit 1
+            fi
+
+            echo "⏳ Still running... (polling in 10s)"
+            sleep 10
+          done
