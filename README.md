@@ -1,6 +1,6 @@
 # Snip
 
-Link shortener and management platform with analytics.
+A template for building a link shortener and management platform with analytics. Demonstrates a production-ready Python/React monorepo using uv workspaces, FastAPI microservices, and GCP infrastructure-as-code.
 
 ## Architecture
 
@@ -15,7 +15,7 @@ Link shortener and management platform with analytics.
                     │   (FastAPI)     │        └──────────────┘
                     └─────────────────┘               ▲
                                                       │
-  short.link/r/abc  ┌─────────────────┐               │
+  example.com/r/abc ┌─────────────────┐               │
   ────────────────▶ │ Redirect Service│───────────────┘
                     │   (FastAPI)     │
                     └────────┬────────┘
@@ -30,13 +30,13 @@ Link shortener and management platform with analytics.
                     └─────────────────┘
 ```
 
-**Dashboard API** manages links (CRUD), authenticates users via Clerk, and queries click analytics.
+**Dashboard API** — Link CRUD, user authentication, and click analytics queries.
 
-**Redirect Service** handles public short link requests (`/r/{short_code}`), resolves the target URL, and publishes a click event to Pub/Sub.
+**Redirect Service** — Resolves `/r/{short_code}` to target URLs, publishes click events to Pub/Sub.
 
-**Click Worker** consumes click events from Pub/Sub and writes them to BigQuery for time-series analytics.
+**Click Worker** — Consumes click events from Pub/Sub and writes them to BigQuery.
 
-**Frontend** is a React SPA for managing links, viewing analytics, and configuring short URLs.
+**Frontend** — React SPA for managing links, viewing analytics, and configuring short URLs.
 
 ## Project Structure
 
@@ -46,6 +46,7 @@ apps/
   dashboard-frontend/   React 19 + TanStack Router — dashboard UI
   redirect-service/     FastAPI — public URL redirect handler
   click-worker/         FastAPI — Pub/Sub → BigQuery click pipeline
+  e2e/                  Playwright — end-to-end tests with Clerk auth
 
 packages/
   db/                   SQLAlchemy ORM, Alembic migrations, stores
@@ -53,23 +54,29 @@ packages/
   email/                Async email (Resend / Mailpit)
   queue/                Message publishing (Pub/Sub / dev)
   analytics/            Click storage + queries (BigQuery / dev)
+  og-image/             OG image generation (Pillow + MinIO/GCS)
+  storage/              Object storage client (MinIO / GCS)
   logger/               Structured logging with structlog
+
+terraform/              Terragrunt + Terraform — GCP infrastructure
 ```
 
 See each app/package README for details.
 
 ## Tech Stack
 
-| Layer | Tech |
-|-------|------|
-| Backend | Python 3.12+, FastAPI, SQLAlchemy 2.0, Pydantic |
+| Layer | Tech                                                   |
+|-------|--------------------------------------------------------|
+| Backend | Python 3.12+, FastAPI, SQLAlchemy 2.0, Pydantic        |
 | Frontend | React 19, TypeScript, TanStack Router/Query, Tailwind |
-| Auth | Clerk |
-| Database | PostgreSQL (asyncpg) |
-| Analytics | Google BigQuery |
-| Queue | Google Pub/Sub |
-| Infra | GCP Cloud Run, Terraform, Terragrunt |
-| Monorepo | uv workspaces |
+| Auth | Clerk                                                  |
+| Database | PostgreSQL (asyncpg)                                   |
+| Analytics | Google BigQuery                                        |
+| Queue | Google Pub/Sub                                         |
+| Storage | Google Cloud Storage, MinIO (dev)                      |
+| E2E Testing | Playwright                                             |
+| Infra | GCP Cloud Run, Terraform, Terragrunt                   |
+| Monorepo | uv workspaces                                          |
 
 ## Getting Started
 
