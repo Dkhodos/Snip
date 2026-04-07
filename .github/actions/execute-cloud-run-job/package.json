@@ -1,0 +1,9 @@
+{
+  "name": "execute-cloud-run-job",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@actions/github-script": "github:actions/github-script"
+  }
+}

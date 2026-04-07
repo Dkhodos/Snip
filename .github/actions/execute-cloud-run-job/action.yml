@@ -1,0 +1,40 @@
+name: Execute Cloud Run Job
+description: Executes a Cloud Run job, streams logs in real-time, and writes a markdown summary
+
+inputs:
+  job:
+    description: Cloud Run job name
+    required: true
+  region:
+    description: GCP region
+    required: true
+  project-id:
+    description: GCP project ID
+    required: true
+  timeout:
+    description: Maximum seconds to wait for completion
+    default: "600"
+  poll-interval:
+    description: Seconds between status/log polls
+    default: "10"
+  summary-title:
+    description: Title for the GitHub step summary report
+    default: "Cloud Run Job Report"
+
+runs:
+  using: composite
+  steps:
+    - name: Execute and stream logs
+      uses: actions/github-script@v8
+      with:
+        script: |
+          const { default: script } = await import('${{ github.workspace }}/.github/actions/execute-cloud-run-job/script.js')
+          await script({
+            core,
+            job: '${{ inputs.job }}',
+            region: '${{ inputs.region }}',
+            projectId: '${{ inputs.project-id }}',
+            timeout: ${{ inputs.timeout }},
+            pollInterval: ${{ inputs.poll-interval }},
+            summaryTitle: `${{ inputs.summary-title }}`,
+          })
