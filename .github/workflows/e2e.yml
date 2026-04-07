@@ -8,14 +8,6 @@ on:
     paths:
       - "apps/e2e/**"
       - ".github/workflows/e2e.yml"
-  workflow_run:
-    workflows:
-      - "Dashboard Frontend CI"
-      - "Dashboard Backend CI"
-      - "Redirect Service CI"
-      - "Click Worker CI"
-    types: [completed]
-    branches: [main]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -27,7 +19,6 @@ env:
 jobs:
   setup:
     name: Auth Setup
-    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: pre-prod
     permissions:
@@ -45,9 +36,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
-
-      - name: Wait for Deploy (if triggered)
-        uses: ./.github/actions/wait-for-deploy
 
       - uses: pnpm/action-setup@v5
         with:
