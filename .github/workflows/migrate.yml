@@ -102,8 +102,6 @@ jobs:
           service_account: "snip-ci-deploy-${{ vars.ENVIRONMENT }}@${{ vars.GCP_PROJECT_ID }}.iam.gserviceaccount.com"
 
       - uses: google-github-actions/setup-gcloud@v3
-        with:
-          install_components: beta
 
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
@@ -130,9 +128,7 @@ jobs:
             --region ${{ env.REGION }}
 
       - name: Execute migrations
-        uses: ./.github/actions/execute-cloud-run-job
-        with:
-          job: ${{ env.JOB }}
-          region: ${{ env.REGION }}
-          project-id: ${{ env.PROJECT_ID }}
-          summary-title: "🗄️ Database Migration Report"
+        run: |
+          gcloud run jobs execute ${{ env.JOB }} \
+            --region ${{ env.REGION }} \
+            --wait
