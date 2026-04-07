@@ -1,5 +1,5 @@
 // @ts-check
-import { execSync } from 'node:child_process';
+import { spawn, execSync } from 'node:child_process';
 import { appendFileSync } from 'node:fs';
 
 /**
@@ -29,16 +29,35 @@ export default async ({ core, job, region, projectId, timeout, pollInterval, sum
   const executionShort = executionFull.split('/').pop();
   core.info(`▶ Execution started: ${executionShort}`);
 
-  // ── Build log filter ────────────────────────────────────────────────
-  const appLogFilter = [
-    `resource.type="cloud_run_job"`,
-    `resource.labels.job_name="${job}"`,
-    `labels."run.googleapis.com/execution_name"="${executionShort}"`,
-    `logName:("stdout" OR "stderr")`,
-  ].join(' AND ');
+  // ── Stream logs in real-time via gRPC tail ──────────────────────────
+  /** @type {string[]} */
+  const capturedLogs = [];
 
-  // ── Poll loop ───────────────────────────────────────────────────────
-  let seenCount = 0;
+  const tail = spawn('gcloud', [
+    'beta', 'run', 'jobs', 'executions', 'logs', 'tail',
+    executionShort,
+    '--region', region,
+    '--project', projectId,
+  ], { stdio: ['ignore', 'pipe', 'pipe'] });
+
+  tail.stdout.on('data', (/** @type {Buffer} */ chunk) => {
+    const text = chunk.toString().trimEnd();
+    if (text) {
+      core.info(text);
+      capturedLogs.push(text);
+    }
+  });
+
+  tail.stderr.on('data', (/** @type {Buffer} */ chunk) => {
+    const text = chunk.toString().trimEnd();
+    // Filter out gcloud beta warnings/noise
+    if (text && !text.startsWith('WARNING:')) {
+      core.info(text);
+      capturedLogs.push(text);
+    }
+  });
+
+  // ── Poll for completion status only ─────────────────────────────────
   const start = Date.now();
   /** @type {'success' | 'failed' | 'timeout'} */
   let result;
@@ -51,19 +70,6 @@ export default async ({ core, job, region, projectId, timeout, pollInterval, sum
       break;
     }
 
-    // Stream new log lines
-    const logs = gcloudSafe(
-      `gcloud logging read '${appLogFilter}' --project="${projectId}" --limit=500 --freshness=15m --order=asc --format="value(timestamp, textPayload)"`,
-    );
-    const lines = logs ? logs.split('\n').filter(Boolean) : [];
-    if (lines.length > seenCount) {
-      for (const line of lines.slice(seenCount)) {
-        core.info(line);
-      }
-      seenCount = lines.length;
-    }
-
-    // Check execution status
     const completed = gcloudSafe(
       `gcloud run jobs executions describe "${executionFull}" --region="${region}" --format="value(status.conditions.filter(type='Completed').map().extract(status).flatten())"`,
     );
@@ -80,17 +86,20 @@ export default async ({ core, job, region, projectId, timeout, pollInterval, sum
       break;
     }
 
-    core.info(`⏳ Still running... (polling in ${pollInterval}s)`);
     await sleep(pollInterval * 1000);
   }
 
+  // Let tail flush remaining logs, then stop it
+  await sleep(3000);
+  tail.kill('SIGTERM');
+
   const duration = Math.round((Date.now() - start) / 1000);
 
-  // ── Fetch final application logs ────────────────────────────────────
+  // ── Fetch complete logs for summary (in case tail missed early lines) ──
   const finalLogs = gcloudSafe(
-    `gcloud logging read '${appLogFilter}' --project="${projectId}" --limit=500 --freshness=15m --order=asc --format="value(textPayload)"`,
+    `gcloud beta run jobs executions logs read "${executionShort}" --region="${region}" --project="${projectId}" --order=asc --format="value(textPayload)"`,
   );
-  const logLines = finalLogs ? finalLogs.split('\n').filter(Boolean) : [];
+  const logLines = finalLogs ? finalLogs.split('\n').filter(Boolean) : capturedLogs;
 
   // ── Parse log content ───────────────────────────────────────────────
   const upgrades = logLines
@@ -127,7 +136,6 @@ export default async ({ core, job, region, projectId, timeout, pollInterval, sum
 
   parts.push('');
 
-  // Migrations applied
   if (upgrades.length > 0) {
     parts.push('### Migrations Applied', '');
     for (const u of upgrades) {
@@ -136,7 +144,6 @@ export default async ({ core, job, region, projectId, timeout, pollInterval, sum
     parts.push('');
   }
 
-  // Errors (if any)
   if (errors.length > 0) {
     parts.push('### Errors', '', '```');
     for (const e of errors) {
@@ -145,7 +152,6 @@ export default async ({ core, job, region, projectId, timeout, pollInterval, sum
     parts.push('```', '');
   }
 
-  // Full logs in collapsible
   parts.push(
     '<details>',
     '<summary>Full Logs</summary>',
