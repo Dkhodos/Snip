@@ -11,9 +11,12 @@
     "report": "playwright show-report"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.4.10",
     "@clerk/backend": "^1.0.0",
     "@clerk/testing": "^2.0.8",
     "@playwright/test": "^1.50.0",
-    "dotenv": "^16.0.0"
+    "@types/node": "^25.5.2",
+    "dotenv": "^16.0.0",
+    "typescript": "^6.0.2"
   }
 }

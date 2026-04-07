@@ -25,6 +25,7 @@ PROJECTS := \
 	analytics:packages/analytics \
 	storage:packages/storage \
 	og-image:packages/og-image \
+	e2e:apps/e2e \
 	terraform:terraform
 
 # Lookup helper: $(call project_dir,<name>) → directory path
