@@ -19,25 +19,16 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  migrate:
-    name: Run DB Migrations
+  wait:
+    name: Waiting for DB Package CI & Terraform
     runs-on: ubuntu-latest
-    environment: pre-prod
     permissions:
       contents: read
-      id-token: write
       actions: read
-
-    env:
-      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
-      REGION: ${{ vars.GCP_REGION }}
-      JOB: snip-migrate-${{ vars.ENVIRONMENT }}
-      REPO: snip-${{ vars.ENVIRONMENT }}
-
     steps:
       - uses: actions/checkout@v6.0.2
 
-      - name: Wait for DB Package CI (if triggered)
+      - name: Waiting for DB Package CI
         uses: actions/github-script@v8
         with:
           script: |
@@ -84,8 +75,25 @@ jobs:
               await new Promise(r => setTimeout(r, poll));
             }
 
-      - name: Wait for Terraform (if triggered)
-        uses: ./.github/actions/wait-for-terraform
+      - uses: ./.github/actions/wait-for-terraform
+
+  migrate:
+    name: Run DB Migrations
+    needs: wait
+    runs-on: ubuntu-latest
+    environment: pre-prod
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
+      REGION: ${{ vars.GCP_REGION }}
+      JOB: snip-migrate-${{ vars.ENVIRONMENT }}
+      REPO: snip-${{ vars.ENVIRONMENT }}
+
+    steps:
+      - uses: actions/checkout@v6.0.2
 
       - id: auth
         uses: google-github-actions/auth@v3

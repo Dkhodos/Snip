@@ -65,16 +65,28 @@ jobs:
       - name: Unit Tests
         run: make dashboard-backend:test:unit
 
+  wait:
+    name: Waiting for Terraform & Migrations
+    needs: ci
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: ./.github/actions/wait-for-terraform
+      - uses: ./.github/actions/wait-for-migrate
+
   deploy:
     name: Deploy to Pre-prod
-    needs: ci
+    needs: [ci, wait]
     if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
     environment: pre-prod
     permissions:
       contents: read
       id-token: write
-      actions: read
 
     env:
       PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
@@ -84,12 +96,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
-
-      - name: Wait for Terraform (if triggered)
-        uses: ./.github/actions/wait-for-terraform
-
-      - name: Wait for Migrations (if triggered)
-        uses: ./.github/actions/wait-for-migrate
 
       - id: auth
         uses: google-github-actions/auth@v3

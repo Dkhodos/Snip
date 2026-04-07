@@ -15,7 +15,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Wait for Deploy (if triggered)
+    - name: Waiting for Deploy
       uses: actions/github-script@v8
       with:
         script: |

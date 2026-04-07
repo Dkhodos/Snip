@@ -18,14 +18,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  wait:
+    name: Waiting for Terraform CI
+    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v6.0.2
+      - uses: ./.github/actions/wait-for-terraform
+
   build:
     name: Build & Push ${{ matrix.name }}
+    needs: wait
+    if: ${{ !cancelled() && (needs.wait.result == 'success' || needs.wait.result == 'skipped') }}
     runs-on: ubuntu-latest
     environment: pre-prod
     permissions:
       contents: read
       id-token: write
-      actions: read
 
     strategy:
       fail-fast: false
@@ -45,10 +57,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6.0.2
-
-      - name: Wait for Terraform (if triggered)
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-        uses: ./.github/actions/wait-for-terraform
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

@@ -7,7 +7,7 @@ inputs:
     default: "15"
   timeout:
     description: Maximum seconds to wait
-    default: "600"
+    default: "1200"
   on-failure:
     description: What to do when the Terraform CI workflow fails — "fail" or "skip"
     default: "fail"
@@ -15,7 +15,7 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Wait for Terraform (if triggered)
+    - name: Waiting for Terraform CI
       uses: actions/github-script@v8
       with:
         script: |
