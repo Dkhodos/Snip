@@ -76,6 +76,7 @@ See each app/package README for details.
 | Storage | Google Cloud Storage, MinIO (dev)                      |
 | E2E Testing | Playwright                                             |
 | Infra | GCP Cloud Run, Terraform, Terragrunt                   |
+| Config | [PKL](https://pkl-lang.org/) — typed config generation  |
 | Monorepo | uv workspaces                                          |
 
 ## Getting Started
@@ -85,6 +86,7 @@ See each app/package README for details.
 - [uv](https://docs.astral.sh/uv/) (Python package manager)
 - [Node.js](https://nodejs.org/) 20+ (for frontend)
 - [Docker](https://www.docker.com/) (for local services)
+- [PKL](https://pkl-lang.org/main/current/pkl-cli/index.html#installation) (typed config language — `brew install pkl`)
 
 ### Local Development
 

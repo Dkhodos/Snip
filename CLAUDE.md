@@ -17,6 +17,7 @@ packages/                      # Shared Python libraries (Provider Pattern)
   analytics/    storage/    og-image/
 
 terraform/                     # Terragrunt + Terraform (GCP)
+.devops/                       # PKL-typed config → generated YAML for values, secrets, services
 dev/                           # docker-compose for local services
 ```
 
@@ -43,6 +44,9 @@ make dashboard-backend:dev         # uvicorn with hot reload
 make dashboard-frontend:dev        # vite dev server
 make db:lint                       # lint the db package
 make db:test:unit                  # test the db package
+make devops:generate               # regenerate YAML from PKL sources
+make devops:check                  # generate + verify no drift
+make devops:validate               # validate PKL without generating
 ```
 
 Run `make <project>:help` to see all targets for a project.
@@ -83,6 +87,15 @@ All Python projects enforce **90% test coverage** (`--cov-fail-under=90`).
 - **TypeScript** strict mode with `noUncheckedIndexedAccess`
 - **Vitest** + Testing Library for unit tests
 - **Playwright** for E2E tests (in `apps/e2e/`)
+
+## DevOps Config (PKL)
+
+`.devops/pkl/` contains typed [PKL](https://pkl-lang.org/) source files that generate the YAML in `.devops/values/`, `.devops/secrets/`, and `.devops/services/`. **Never edit the generated YAML directly** — edit the `.pkl` source and run `make devops:generate`.
+
+- **Schemas** in `pkl/schemas/` — `ServiceSpec.pkl` (type, needs_vpc, public) and `Secrets.pkl` (key, env_var, secret_name with regex validation)
+- **Sources** mirror output structure: `pkl/values/pre-prod/backend/values.pkl` generates `values/pre-prod/backend/values.yaml`
+- **Pre-commit hook** auto-validates on changes to `.devops/`
+- **CI workflow** (`devops-config.yml`) validates and checks for drift
 
 ## Key Conventions
 

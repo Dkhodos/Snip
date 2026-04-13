@@ -1,0 +1,6 @@
+/// Dashboard frontend config for pre-prod.
+
+redirect_base_url = "https://r.pre-prod.snip-app.win"
+
+// Public key — safe to store in plain text (exposed in frontend bundle)
+clerk_publishable_key = "pk_test_dGlkeS1zdGlua2J1Zy02Mi5jbGVyay5hY2NvdW50cy5kZXYk"

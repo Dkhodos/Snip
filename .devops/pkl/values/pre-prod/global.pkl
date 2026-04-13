@@ -1,0 +1,4 @@
+/// Environment-level config shared by all pre-prod services.
+
+environment = "staging"
+gcp_project_id = "snip-491719"

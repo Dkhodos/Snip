@@ -26,7 +26,8 @@ PROJECTS := \
 	storage:packages/storage \
 	og-image:packages/og-image \
 	e2e:apps/e2e \
-	terraform:terraform
+	terraform:terraform \
+	devops:.devops
 
 # Lookup helper: $(call project_dir,<name>) → directory path
 project_dir = $(patsubst $(1):%,%,$(filter $(1):%,$(PROJECTS)))

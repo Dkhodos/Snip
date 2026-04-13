@@ -158,6 +158,14 @@ repos:
         files: ^apps/dashboard-backend/.*\.py$
         pass_filenames: false
 
+      # ── DevOps: PKL config validation ────────────────────────
+      - id: pkl-devops-config
+        name: "pkl: devops config"
+        entry: make devops:check
+        language: system
+        files: ^\.devops/(pkl|values|secrets|services)/
+        pass_filenames: false
+
       # ── Terraform: Checkov security scan ─────────────────────
       - id: checkov-terraform
         name: "checkov: terraform"
