@@ -1,0 +1,53 @@
+name: DevOps Config (PKL)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".devops/pkl/**"
+      - ".devops/values/**"
+      - ".devops/secrets/**"
+      - ".devops/services/**"
+      - ".devops/scripts/**"
+      - ".devops/Makefile"
+      - ".github/workflows/devops-config.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".devops/pkl/**"
+      - ".devops/values/**"
+      - ".devops/secrets/**"
+      - ".devops/services/**"
+      - ".devops/scripts/**"
+      - ".devops/Makefile"
+      - ".github/workflows/devops-config.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PKL_VERSION: "0.31.1"
+
+jobs:
+  validate:
+    name: Validate PKL & Check Drift
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - name: Install PKL
+        run: |
+          curl -sL "https://github.com/apple/pkl/releases/download/${PKL_VERSION}/pkl-linux-amd64" -o /usr/local/bin/pkl
+          chmod +x /usr/local/bin/pkl
+          pkl --version
+
+      - name: Validate PKL schemas
+        run: make devops:validate
+
+      - name: Check generated YAML is in sync
+        run: make devops:check

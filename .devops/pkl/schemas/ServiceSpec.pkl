@@ -1,0 +1,12 @@
+/// Deployment metadata for a Cloud Run service or job.
+/// Consumed by Terraform to configure networking, IAM, and scheduling.
+module ServiceSpec
+
+// Workload type: long-running "service" or one-off "job".
+type: "service"|"job"
+
+// Whether the workload needs VPC access (e.g. for Cloud SQL).
+needs_vpc: Boolean
+
+// Whether the workload allows unauthenticated access.
+public: Boolean

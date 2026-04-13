@@ -1,0 +1,5 @@
+amends "../../schemas/ServiceSpec.pkl"
+
+type = "service"
+needs_vpc = false
+public = true
