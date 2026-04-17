@@ -60,23 +60,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Export requirements from uv lockfile
-        run: |
-          uv export --no-hashes --all-packages --frozen \
-            | grep -v '^-e ' \
-            | grep -v '^[[:space:]]*#' \
-            | grep -v '^#' \
-            | grep -v '^$' \
-            > /tmp/requirements.txt
-
       - name: Run pip-audit
-        run: uv run pip-audit -r /tmp/requirements.txt --desc || true
+        run: make security:pip-audit:scan
 
       - name: Summary
         if: always()
         run: |
           echo "## Python Dependency Audit" >> "$GITHUB_STEP_SUMMARY"
-          echo "Ran \`pip-audit\` against all workspace dependencies exported from \`uv.lock\`." >> "$GITHUB_STEP_SUMMARY"
+          echo "Ran \`make security:pip-audit:scan\` against all workspace dependencies exported from \`uv.lock\`." >> "$GITHUB_STEP_SUMMARY"
 
   node-deps:
     name: Node.js Dependency Audit
@@ -190,3 +181,30 @@ jobs:
         run: |
           echo "## Semgrep SAST" >> "$GITHUB_STEP_SUMMARY"
           echo "Ran Semgrep with community rules against Python and TypeScript/JavaScript code (WARNING+ severity)." >> "$GITHUB_STEP_SUMMARY"
+
+  skylos:
+    name: Skylos (Dead Code)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6.0.2
+
+      - uses: astral-sh/setup-uv@v8.0.0
+        with:
+          enable-cache: true
+
+      - uses: actions/setup-python@v6.2.0
+        with:
+          python-version: "3.12"
+
+      - name: Run Skylos
+        run: make security:skylos:scan
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Skylos Dead Code" >> "$GITHUB_STEP_SUMMARY"
+          echo "Ran \`make security:skylos:scan\` in advisory mode (confidence >= 60). Findings do not block the build." >> "$GITHUB_STEP_SUMMARY"

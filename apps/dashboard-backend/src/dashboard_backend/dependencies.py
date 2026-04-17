@@ -137,7 +137,7 @@ def get_email_client() -> EmailClient:
     )
 
 
-async def get_notification_manager(
+async def get_notification_manager(  # skylos: ignore
     email_client: EmailClient = Depends(get_email_client),
     feature_flag_manager: FeatureFlagManager = Depends(get_feature_flag_manager),
 ) -> NotificationManager:
