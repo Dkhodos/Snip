@@ -47,7 +47,7 @@ jobs:
     needs: ci
     if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
-    environment: pre-prod
+    environment: ${{ vars.ENVIRONMENT }}
     permissions:
       contents: read
       actions: read
@@ -110,7 +110,7 @@ jobs:
     needs: [setup, wait]
     if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
-    environment: pre-prod
+    environment: ${{ vars.ENVIRONMENT }}
     permissions:
       contents: read
 
@@ -167,7 +167,7 @@ jobs:
     needs: [setup, wait]
     if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
-    environment: pre-prod
+    environment: ${{ vars.ENVIRONMENT }}
     permissions:
       contents: read
 
