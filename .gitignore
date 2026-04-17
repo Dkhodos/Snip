@@ -43,3 +43,6 @@ Thumbs.db
 
 # Security
 .skylos
+
+# github
+.envrc

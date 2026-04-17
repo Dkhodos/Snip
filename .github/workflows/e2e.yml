@@ -45,6 +45,7 @@ jobs:
   setup:
     name: Auth Setup
     needs: ci
+    if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: pre-prod
     permissions:
@@ -95,6 +96,7 @@ jobs:
   wait:
     name: Waiting for Deploy
     needs: setup
+    if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -106,6 +108,7 @@ jobs:
   e2e:
     name: E2E Tests
     needs: [setup, wait]
+    if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: pre-prod
     permissions:
@@ -162,6 +165,7 @@ jobs:
   system:
     name: System Tests
     needs: [setup, wait]
+    if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: pre-prod
     permissions:

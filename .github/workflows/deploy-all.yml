@@ -15,6 +15,7 @@ concurrency:
 jobs:
   terraform:
     name: Infrastructure
+    if: vars.DEPLOYMENTS_ENABLED == 'true'
     uses: ./.github/workflows/terraform.yml
     permissions:
       contents: read
