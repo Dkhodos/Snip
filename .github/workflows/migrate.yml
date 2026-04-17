@@ -21,6 +21,7 @@ env:
 jobs:
   wait:
     name: Waiting for DB Package CI & Terraform
+    if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -80,6 +81,7 @@ jobs:
   migrate:
     name: Run DB Migrations
     needs: wait
+    if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
     environment: pre-prod
     permissions:
