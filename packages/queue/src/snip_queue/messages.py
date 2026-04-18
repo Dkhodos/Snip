@@ -1,9 +1,10 @@
 """Queue message types for click events."""
 
-import json
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
+
+import orjson
 
 
 @dataclass(frozen=True)
@@ -29,12 +30,12 @@ class ClickEventMessage:
             "user_agent": self.user_agent,
             "country": self.country,
         }
-        return json.dumps(data).encode("utf-8")
+        return orjson.dumps(data)
 
     @classmethod
     def from_json(cls, data: bytes) -> "ClickEventMessage":
         """Deserialize from JSON bytes."""
-        parsed = json.loads(data)
+        parsed = orjson.loads(data)
         return cls(
             event_id=parsed["event_id"],
             link_id=parsed["link_id"],
