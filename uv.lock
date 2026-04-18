@@ -4037,6 +4037,7 @@ version = "0.1.0"
 source = { editable = "packages/queue" }
 dependencies = [
     { name = "google-cloud-pubsub" },
+    { name = "orjson" },
 ]
 
 [package.optional-dependencies]
@@ -4051,6 +4052,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "google-cloud-pubsub", specifier = ">=2.0" },
+    { name = "orjson", specifier = ">=3.10" },
     { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-asyncio", marker = "extra == 'dev'" },

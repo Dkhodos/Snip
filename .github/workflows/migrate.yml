@@ -83,7 +83,7 @@ jobs:
     needs: wait
     if: vars.DEPLOYMENTS_ENABLED == 'true'
     runs-on: ubuntu-latest
-    environment: pre-prod
+    environment: ${{ vars.ENVIRONMENT }}
     permissions:
       contents: read
       id-token: write

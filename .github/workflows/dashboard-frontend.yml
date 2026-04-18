@@ -70,7 +70,7 @@ jobs:
     needs: [ci, wait]
     if: vars.DEPLOYMENTS_ENABLED == 'true' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
-    environment: pre-prod
+    environment: ${{ vars.ENVIRONMENT }}
     permissions:
       contents: read
       id-token: write

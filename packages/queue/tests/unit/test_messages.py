@@ -1,7 +1,8 @@
 """Tests for queue message types."""
 
-import json
 from datetime import UTC, datetime
+
+import orjson
 
 from snip_queue.messages import ClickEventMessage
 
@@ -49,7 +50,7 @@ class TestClickEventMessage:
         )
 
         data = msg.to_json()
-        parsed = json.loads(data)
+        parsed = orjson.loads(data)
         assert parsed["user_agent"] is None
         assert parsed["country"] is None
 

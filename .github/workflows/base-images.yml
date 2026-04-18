@@ -34,7 +34,7 @@ jobs:
     needs: wait
     if: ${{ !cancelled() && (needs.wait.result == 'success' || needs.wait.result == 'skipped') }}
     runs-on: ubuntu-latest
-    environment: pre-prod
+    environment: ${{ vars.ENVIRONMENT }}
     permissions:
       contents: read
       id-token: write
