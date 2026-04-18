@@ -124,9 +124,6 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = [...]
 
-[project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "ruff", "pyright>=1.1.400"]
-
 [tool.uv.sources]
 # workspace references to other <project> packages
 
@@ -134,6 +131,8 @@ dev = ["pytest", "pytest-asyncio", "pytest-cov", "ruff", "pyright>=1.1.400"]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 ```
+
+Dev dependencies (pytest, ruff, pyright) are defined in the root `[dependency-groups] dev`. Only add a member-level `[dependency-groups] dev` if the package needs extra test-only deps beyond the common set (e.g., `aiosqlite` for database packages).
 
 Same ruff and pyright config as apps (line-length 100, standard mode).
 

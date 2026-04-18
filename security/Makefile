@@ -50,11 +50,11 @@ $(VENV)/bin/python:
 	$(UV) venv $(VENV)
 
 install: venv ## Install all deps (including dev)
-	$(UV) sync --all-packages --extra dev
+	$(UV) sync --all-packages --group dev
 	@touch $(SYNC_STAMP)
 
 $(SYNC_STAMP): pyproject.toml $(ROOT)/uv.lock | $(VENV)/bin/python
-	$(UV) sync --all-packages --extra dev
+	$(UV) sync --all-packages --group dev
 	@touch $(SYNC_STAMP)
 
 sync: $(SYNC_STAMP) ## Ensure deps are up-to-date (fast no-op if nothing changed)

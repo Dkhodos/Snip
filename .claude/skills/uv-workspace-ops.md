@@ -33,13 +33,12 @@ members = ["apps/dashboard-backend", "apps/redirect-service", "apps/click-worker
    requires-python = ">=3.12"
    dependencies = [...]
 
-   [project.optional-dependencies]
-   dev = ["pytest", "pytest-asyncio", "pytest-cov", "ruff", "pyright>=1.1.400"]
-
    [build-system]
    requires = ["hatchling"]
    build-backend = "hatchling.build"
    ```
+
+   Dev dependencies (pytest, ruff, pyright, etc.) come from the root `[dependency-groups] dev`. Only add a member-level `[dependency-groups] dev` if the package has extra test-only deps beyond the common set (e.g., `aiosqlite` for database packages).
 
 2. The `packages/*` glob in root pyproject.toml picks it up automatically.
 
@@ -114,7 +113,7 @@ PYRIGHT  := $(UV) run --package <pip-name> pyright
 SYNC_STAMP := $(VENV)/.<pip-name>-synced
 
 $(SYNC_STAMP): pyproject.toml $(ROOT)/uv.lock | $(VENV)/bin/python
-	$(UV) sync --all-packages --extra dev
+	$(UV) sync --all-packages --group dev
 	@touch $(SYNC_STAMP)
 
 sync: $(SYNC_STAMP)
@@ -148,7 +147,25 @@ When adding a new project, add an entry to `PROJECTS` in the root Makefile.
 
 ## Common Issues
 
-- **"No module named X"**: Run `uv sync --all-packages --extra dev` from repo root
+- **"No module named X"**: Run `uv sync --all-packages --group dev` from repo root
 - **Lock file conflicts**: Run `uv lock` to regenerate `uv.lock`
 - **Stale venv**: Delete `.venv/` and `uv sync --all-packages` to rebuild
 - **Missing workspace source**: Ensure both `dependencies` and `[tool.uv.sources]` entries exist
+
+## Additional Workspace Patterns
+
+### `[dependency-groups]` — Centralized Dev Dependencies
+
+The root `pyproject.toml` defines a `[dependency-groups] dev` section containing common dev dependencies (pytest, ruff, pyright, etc.) shared across all workspace members. Individual members only add a `[dependency-groups] dev` section if they need extra test-only deps beyond the common set (e.g., `aiosqlite` for database packages).
+
+### `[tool.uv.constraint-dependencies]` — Version Floors
+
+The root `pyproject.toml` has a `[tool.uv.constraint-dependencies]` section that enforces minimum version floors across the entire workspace. This ensures all members resolve to at least the specified versions without requiring each member to duplicate version constraints.
+
+### `[project.scripts]` — App Entry Points
+
+Apps define `<short-name>-dev` and `<short-name>-serve` entry points in their `[project.scripts]` section (e.g., `dashboard-dev`, `dashboard-serve`). These point to functions in a `cli.py` module that wraps `uvicorn.run()` with dev (reload, app-specific port) and prod (port 8080) configurations. Makefile `dev` targets use `$(UV) run --package <name> <short-name>-dev`.
+
+### `.python-version` — Python Version Source of Truth
+
+The `.python-version` file at the repo root is the single source of truth for the Python version used across the workspace. UV reads this file to determine which Python interpreter to use.

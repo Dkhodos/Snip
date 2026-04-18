@@ -42,12 +42,12 @@ $(VENV)/bin/python:
 	$(UV) venv $(VENV)
 
 install: venv ## Install all deps (including dev)
-	$(UV) sync --all-packages --extra dev
+	$(UV) sync --all-packages --group dev
 	@touch $(SYNC_STAMP)
 
 # Auto-sync when pyproject.toml or lockfile changes
 $(SYNC_STAMP): pyproject.toml $(ROOT)/uv.lock | $(VENV)/bin/python
-	$(UV) sync --all-packages --extra dev
+	$(UV) sync --all-packages --group dev
 	@touch $(SYNC_STAMP)
 
 sync: $(SYNC_STAMP) ## Ensure deps are up-to-date (fast no-op if nothing changed)
@@ -57,10 +57,7 @@ sync: $(SYNC_STAMP) ## Ensure deps are up-to-date (fast no-op if nothing changed
 # ──────────────────────────────────────────────────────────────
 
 dev: sync ## Run local dev server with hot reload
-	$(UV) run --package dashboard-backend uvicorn dashboard_backend.main:app \
-		--reload \
-		--host 0.0.0.0 \
-		--port 8000
+	$(UV) run --package dashboard-backend dashboard-dev
 
 # ──────────────────────────────────────────────────────────────
 #  Lint

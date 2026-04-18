@@ -4,7 +4,7 @@ version = "0.1.0"
 requires-python = ">=3.12"
 dependencies = []
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
     "skylos>=0.1.0",
     "pip-audit>=2.10.0",

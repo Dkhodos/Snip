@@ -12,8 +12,12 @@ dependencies = [
     "google-auth>=2.0",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "pyright>=1.1.400"]
+[project.scripts]
+worker-dev = "click_worker.cli:dev"
+worker-serve = "click_worker.cli:serve"
+
+[dependency-groups]
+dev = ["httpx"]
 
 [tool.uv.sources]
 snip-queue = { workspace = true }
@@ -37,6 +41,9 @@ exclude = ["tests"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.coverage.run]
+omit = ["src/click_worker/cli.py"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

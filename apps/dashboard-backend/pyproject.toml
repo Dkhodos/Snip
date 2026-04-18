@@ -16,8 +16,12 @@ dependencies = [
     "shortuuid",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "aiosqlite", "pyright>=1.1.400"]
+[project.scripts]
+dashboard-dev = "dashboard_backend.cli:dev"
+dashboard-serve = "dashboard_backend.cli:serve"
+
+[dependency-groups]
+dev = ["httpx", "aiosqlite"]
 
 [tool.uv.sources]
 snip-db = { workspace = true }
@@ -52,7 +56,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.coverage.run]
-omit = ["src/dashboard_backend/exceptions.py"]
+omit = ["src/dashboard_backend/exceptions.py", "src/dashboard_backend/cli.py"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

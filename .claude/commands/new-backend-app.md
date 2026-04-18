@@ -25,6 +25,7 @@ apps/<app-name>/
   src/<import_name>/
     __init__.py          # Empty
     main.py              # FastAPI app with lifespan, health check, CORS
+    cli.py               # Entry points for dev/serve scripts (uvicorn.run wrappers)
     config.py            # Settings(BaseSettings) with env_file=".env", extra="ignore"
     dependencies.py      # get_current_user, placeholder stores/managers
     exceptions.py        # DomainError base class
@@ -40,16 +41,18 @@ apps/<app-name>/
       base/
         __init__.py
         base_test_case.py
-  pyproject.toml         # Copy structure from dashboard-backend, adjust name and deps
+  pyproject.toml         # Copy structure from dashboard-backend; include [project.scripts] for dev/serve entry points; dev deps come from root [dependency-groups]
   Makefile               # Copy from dashboard-backend, adjust SRC and package name
   Dockerfile             # Copy from dashboard-backend, adjust entry point
+  entrypoint.sh          # Docker entry point — calls the serve script
   .env.example           # Minimal env vars
 ```
 
 4. Add entry to root `Makefile` PROJECTS list
 5. Add to root `pyproject.toml` workspace members if not covered by glob
-6. Run `uv sync --all-packages` to verify it resolves
-7. Run `make <app-name>:lint` to verify the scaffold passes lint
+6. Define `<short-name>-dev` and `<short-name>-serve` scripts in `[project.scripts]` pointing to `<import_name>.cli:dev` and `<import_name>.cli:serve`
+7. Run `uv sync --all-packages` to verify it resolves
+8. Run `make <app-name>:lint` to verify the scaffold passes lint
 
 ## Reference
 
