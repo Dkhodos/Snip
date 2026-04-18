@@ -43,13 +43,15 @@ packages/<name>/
     unit/
       __init__.py
       test_factory.py    # Test factory creates correct client types
-  pyproject.toml         # <project>-<name>, hatchling build, same ruff/pyright config
+  pyproject.toml         # <project>-<name>, hatchling build, same ruff/pyright config (no [project.optional-dependencies] dev)
   Makefile               # Same pattern as other packages
 ```
 
 4. Add `<name>:packages/<name>` to root `Makefile` PROJECTS list
 5. Run `uv sync --all-packages`
 6. Run `make <name>:lint` to verify
+
+**Note:** Dev dependencies are inherited from the root `[dependency-groups] dev`. If the package needs additional test-only deps, add a `[dependency-groups] dev` section with only those extras.
 
 ## Reference
 

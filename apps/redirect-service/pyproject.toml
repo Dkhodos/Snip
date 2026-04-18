@@ -11,8 +11,12 @@ dependencies = [
     "pydantic-settings",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "aiosqlite", "pyright>=1.1.400"]
+[project.scripts]
+redirect-dev = "redirect_service.cli:dev"
+redirect-serve = "redirect_service.cli:serve"
+
+[dependency-groups]
+dev = ["httpx", "aiosqlite"]
 
 [tool.uv.sources]
 snip-db = { workspace = true }

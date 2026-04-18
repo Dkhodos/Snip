@@ -30,6 +30,10 @@ Root `pyproject.toml` defines the workspace. Members: all apps (except `dashboar
 - **App import name**: `<name_underscore>` (e.g., `dashboard_backend`, `redirect_service`)
 - **Workspace source reference** in pyproject.toml: `<project>-<name> = { workspace = true }`
 - **Build system**: hatchling for all packages and apps
+- **Python version**: `.python-version` at repo root is the single source of truth
+- **Dev dependencies**: defined in root `[dependency-groups] dev`; members add extras via member-level `[dependency-groups] dev`
+- **Version floors**: enforced via `[tool.uv.constraint-dependencies]` in root `pyproject.toml`
+- **App entry points**: apps use `[project.scripts]` for `*-dev` / `*-serve` commands (wrapping `uvicorn.run()` in `cli.py`)
 
 ## Make Commands
 

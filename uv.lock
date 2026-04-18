@@ -25,6 +25,20 @@ members = [
     "snip-telemetry",
     "snip-terraform",
 ]
+constraints = [
+    { name = "alembic", specifier = ">=1.13" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "opentelemetry-api", specifier = ">=1.20" },
+    { name = "opentelemetry-sdk", specifier = ">=1.20" },
+    { name = "pydantic", specifier = ">=2.0" },
+    { name = "pydantic-settings", specifier = ">=2.0" },
+    { name = "pyright", specifier = ">=1.1.400" },
+    { name = "pytest", specifier = ">=8.0" },
+    { name = "pytest-asyncio", specifier = ">=0.24" },
+    { name = "ruff", specifier = ">=0.8" },
+    { name = "sqlalchemy", specifier = ">=2.0" },
+    { name = "structlog", specifier = ">=24.0" },
+]
 
 [[package]]
 name = "aiodns"
@@ -734,33 +748,24 @@ dependencies = [
     { name = "snip-telemetry", extra = ["fastapi", "grpc", "httpx"] },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "httpx" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "fastapi", extras = ["standard"] },
     { name = "google-auth", specifier = ">=2.0" },
-    { name = "httpx", marker = "extra == 'dev'" },
     { name = "pydantic-settings" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "snip-analytics", editable = "packages/analytics" },
     { name = "snip-logger", editable = "packages/logger" },
     { name = "snip-queue", editable = "packages/queue" },
     { name = "snip-telemetry", extras = ["fastapi", "httpx", "grpc"], editable = "packages/telemetry" },
 ]
-provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "httpx" }]
 
 [[package]]
 name = "cloudsplaining"
@@ -980,29 +985,17 @@ dependencies = [
     { name = "snip-telemetry", extra = ["fastapi", "httpx", "sqlalchemy"] },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "aiosqlite" },
     { name = "httpx" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "aiosqlite", marker = "extra == 'dev'" },
     { name = "fastapi", extras = ["standard"] },
     { name = "httpx" },
-    { name = "httpx", marker = "extra == 'dev'" },
     { name = "pydantic-settings" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "shortuuid" },
     { name = "snip-auth", editable = "packages/auth" },
     { name = "snip-db", extras = ["pg"], editable = "packages/db" },
@@ -1012,7 +1005,12 @@ requires-dist = [
     { name = "snip-storage", editable = "packages/storage" },
     { name = "snip-telemetry", extras = ["fastapi", "sqlalchemy", "httpx"], editable = "packages/telemetry" },
 ]
-provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "aiosqlite" },
+    { name = "httpx" },
+]
 
 [[package]]
 name = "decorator"
@@ -3515,34 +3513,27 @@ dependencies = [
     { name = "snip-telemetry", extra = ["fastapi", "grpc", "sqlalchemy"] },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "aiosqlite" },
     { name = "httpx" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "aiosqlite", marker = "extra == 'dev'" },
     { name = "fastapi", extras = ["standard"] },
-    { name = "httpx", marker = "extra == 'dev'" },
     { name = "pydantic-settings" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "snip-db", extras = ["pg"], editable = "packages/db" },
     { name = "snip-logger", editable = "packages/logger" },
     { name = "snip-queue", editable = "packages/queue" },
     { name = "snip-telemetry", extras = ["fastapi", "sqlalchemy", "grpc"], editable = "packages/telemetry" },
 ]
-provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "aiosqlite" },
+    { name = "httpx" },
+]
 
 [[package]]
 name = "referencing"
@@ -4035,15 +4026,7 @@ name = "snip"
 version = "0.1.0"
 source = { virtual = "." }
 
-[[package]]
-name = "snip-analytics"
-version = "0.1.0"
-source = { editable = "packages/analytics" }
-dependencies = [
-    { name = "google-cloud-bigquery" },
-]
-
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "pyright" },
     { name = "pytest" },
@@ -4053,15 +4036,26 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "google-cloud-bigquery", specifier = ">=3.0" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pyright", specifier = ">=1.1.400" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
 ]
-provides-extras = ["dev"]
+
+[[package]]
+name = "snip-analytics"
+version = "0.1.0"
+source = { editable = "packages/analytics" }
+dependencies = [
+    { name = "google-cloud-bigquery" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "google-cloud-bigquery", specifier = ">=3.0" }]
 
 [[package]]
 name = "snip-auth"
@@ -4073,27 +4067,12 @@ dependencies = [
     { name = "pyjwt", extra = ["crypto"] },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "cryptography", specifier = ">=42.0.0" },
     { name = "httpx" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.8.0" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "snip-db"
@@ -4107,33 +4086,27 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-dev = [
-    { name = "aiosqlite" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
 pg = [
     { name = "asyncpg" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "aiosqlite" },
+]
+
 [package.metadata]
 requires-dist = [
-    { name = "aiosqlite", marker = "extra == 'dev'" },
     { name = "alembic", specifier = ">=1.13" },
     { name = "asyncpg", marker = "extra == 'pg'", specifier = ">=0.29" },
     { name = "greenlet", specifier = ">=3.3.2" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.1" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "sqlalchemy", specifier = ">=2.0" },
 ]
-provides-extras = ["pg", "dev"]
+provides-extras = ["pg"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "aiosqlite" }]
 
 [[package]]
 name = "snip-email"
@@ -4144,26 +4117,11 @@ dependencies = [
     { name = "resend" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "aiosmtplib", specifier = ">=3.0" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "resend", specifier = ">=2.0" },
-    { name = "ruff", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "snip-logger"
@@ -4174,20 +4132,11 @@ dependencies = [
     { name = "structlog" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "pyright" },
-    { name = "ruff" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "fastapi", extras = ["standard"] },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "structlog", specifier = ">=24.0" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "snip-og-image"
@@ -4200,28 +4149,13 @@ dependencies = [
     { name = "snip-storage" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "httpx" },
     { name = "pillow", specifier = ">=10.1.0" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
     { name = "snip-logger", editable = "packages/logger" },
     { name = "snip-storage", editable = "packages/storage" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "snip-queue"
@@ -4232,44 +4166,30 @@ dependencies = [
     { name = "orjson" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "google-cloud-pubsub", specifier = ">=2.0" },
     { name = "orjson", specifier = ">=3.10" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "snip-security"
 version = "0.1.0"
 source = { editable = "security" }
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "pip-audit" },
     { name = "skylos" },
 ]
 
 [package.metadata]
-requires-dist = [
-    { name = "pip-audit", marker = "extra == 'dev'", specifier = ">=2.10.0" },
-    { name = "skylos", marker = "extra == 'dev'", specifier = ">=0.1.0" },
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "pip-audit", specifier = ">=2.10.0" },
+    { name = "skylos", specifier = ">=0.1.0" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "snip-storage"
@@ -4281,27 +4201,12 @@ dependencies = [
     { name = "pydantic" },
 ]
 
-[package.optional-dependencies]
-dev = [
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-
 [package.metadata]
 requires-dist = [
     { name = "google-cloud-storage", specifier = ">=2.0" },
     { name = "minio", specifier = ">=7.0" },
     { name = "pydantic", specifier = ">=2.0" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev"]
 
 [[package]]
 name = "snip-telemetry"
@@ -4316,17 +4221,6 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-dev = [
-    { name = "opentelemetry-instrumentation-fastapi" },
-    { name = "opentelemetry-instrumentation-grpc" },
-    { name = "opentelemetry-instrumentation-httpx" },
-    { name = "opentelemetry-instrumentation-sqlalchemy" },
-    { name = "pyright" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
 fastapi = [
     { name = "opentelemetry-instrumentation-fastapi" },
 ]
@@ -4340,6 +4234,11 @@ sqlalchemy = [
     { name = "opentelemetry-instrumentation-sqlalchemy" },
 ]
 
+[package.dev-dependencies]
+dev = [
+    { name = "snip-telemetry", extra = ["fastapi", "grpc", "httpx", "sqlalchemy"] },
+]
+
 [package.metadata]
 requires-dist = [
     { name = "opentelemetry-api", specifier = ">=1.20" },
@@ -4350,29 +4249,27 @@ requires-dist = [
     { name = "opentelemetry-instrumentation-sqlalchemy", marker = "extra == 'sqlalchemy'", specifier = ">=0.41b0" },
     { name = "opentelemetry-sdk", specifier = ">=1.20" },
     { name = "opentelemetry-semantic-conventions", specifier = ">=0.41b0" },
-    { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
-    { name = "pytest", marker = "extra == 'dev'" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'" },
-    { name = "pytest-cov", marker = "extra == 'dev'" },
-    { name = "ruff", marker = "extra == 'dev'" },
-    { name = "snip-telemetry", extras = ["fastapi", "sqlalchemy", "httpx", "grpc"], marker = "extra == 'dev'" },
     { name = "structlog", specifier = ">=24.0" },
 ]
-provides-extras = ["fastapi", "sqlalchemy", "httpx", "grpc", "dev"]
+provides-extras = ["fastapi", "sqlalchemy", "httpx", "grpc"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "snip-telemetry", extras = ["fastapi", "sqlalchemy", "httpx", "grpc"] }]
 
 [[package]]
 name = "snip-terraform"
 version = "0.1.0"
 source = { editable = "terraform" }
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "checkov" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "checkov", marker = "extra == 'dev'", specifier = ">=3" }]
-provides-extras = ["dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "checkov", specifier = ">=3" }]
 
 [[package]]
 name = "sortedcontainers"

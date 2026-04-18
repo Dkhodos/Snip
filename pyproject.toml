@@ -3,5 +3,30 @@ name = "snip"
 version = "0.1.0"
 requires-python = ">=3.12"
 
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "ruff",
+    "pyright>=1.1.400",
+]
+
+[tool.uv]
+constraint-dependencies = [
+    "pyright>=1.1.400",
+    "structlog>=24.0",
+    "httpx>=0.27",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "sqlalchemy>=2.0",
+    "alembic>=1.13",
+    "opentelemetry-api>=1.20",
+    "opentelemetry-sdk>=1.20",
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "ruff>=0.8",
+]
+
 [tool.uv.workspace]
 members = ["apps/dashboard-backend", "apps/redirect-service", "apps/click-worker", "packages/*", "terraform", "security"]

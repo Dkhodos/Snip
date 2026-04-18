@@ -12,8 +12,12 @@ dependencies = [
     "google-auth>=2.0",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "pyright>=1.1.400"]
+[project.scripts]
+worker-dev = "click_worker.cli:dev"
+worker-serve = "click_worker.cli:serve"
+
+[dependency-groups]
+dev = ["httpx"]
 
 [tool.uv.sources]
 snip-queue = { workspace = true }

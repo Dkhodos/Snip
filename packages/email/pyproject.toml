@@ -7,9 +7,6 @@ dependencies = [
     "aiosmtplib>=3.0",
 ]
 
-[project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "ruff", "pyright>=1.1.400"]
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

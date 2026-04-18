@@ -10,6 +10,7 @@ apps/<name>/
     __init__.py
     main.py              # FastAPI app, lifespan, middleware, exception handlers, router includes
     config.py            # pydantic_settings.BaseSettings singleton
+    cli.py               # Entry points for dev/serve scripts (uvicorn.run wrappers)
     dependencies.py      # All FastAPI Depends wiring
     exceptions.py        # DomainError hierarchy
     routers/             # One file per resource — APIRouter with prefix and tags
@@ -159,6 +160,33 @@ from <project>_logger import get_logger
 _log = get_logger("service-name", log_prefix="ClassName")
 _log.info("event_name", key=value, other_key=other_value)
 ```
+
+## Entry Points (`cli.py`)
+
+Apps define `[project.scripts]` in their `pyproject.toml` for dev and serve entry points:
+
+```toml
+[project.scripts]
+dashboard-dev = "dashboard_backend.cli:dev"
+dashboard-serve = "dashboard_backend.cli:serve"
+```
+
+The `cli.py` module wraps `uvicorn.run()` with two configurations:
+
+```python
+import uvicorn
+
+def dev() -> None:
+    """Dev server with hot reload on an app-specific port."""
+    uvicorn.run("dashboard_backend.main:app", host="0.0.0.0", port=8001, reload=True)
+
+def serve() -> None:
+    """Production server on port 8080."""
+    uvicorn.run("dashboard_backend.main:app", host="0.0.0.0", port=8080)
+```
+
+- Makefile `dev` target: `$(UV) run --package <pip-name> <short-name>-dev`
+- `entrypoint.sh` in the Docker image calls the serve script
 
 ## Application Lifespan (`main.py`)
 

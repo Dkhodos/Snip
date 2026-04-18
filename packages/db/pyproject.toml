@@ -11,7 +11,9 @@ dependencies = [
 
 [project.optional-dependencies]
 pg = ["asyncpg>=0.29"]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "ruff", "aiosqlite", "pyright>=1.1.400"]
+
+[dependency-groups]
+dev = ["aiosqlite"]
 
 [build-system]
 requires = ["hatchling"]
