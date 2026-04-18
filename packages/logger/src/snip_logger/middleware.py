@@ -20,6 +20,15 @@ async def logging_middleware(request: Request, call_next) -> Response:  # type: 
     structlog.contextvars.clear_contextvars()
     structlog.contextvars.bind_contextvars(request_id=str(uuid.uuid4()))
 
+    try:
+        from opentelemetry import trace as _trace
+
+        ctx = _trace.get_current_span().get_span_context()
+        if ctx.trace_id:
+            structlog.contextvars.bind_contextvars(trace_id=format(ctx.trace_id, "032x"))
+    except ImportError:
+        pass
+
     start = time.perf_counter()
     response: Response = await call_next(request)
     duration_ms = round((time.perf_counter() - start) * 1000, 2)

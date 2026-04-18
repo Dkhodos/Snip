@@ -7,6 +7,7 @@ from typing import Optional
 from snip_db.stores.link_store import LinkStore
 from snip_logger import get_logger
 from snip_queue import ClickEventMessage, QueuePublisher
+from snip_telemetry import traced
 
 from redirect_service.exceptions import LinkExpiredError, LinkNotFoundError
 
@@ -33,6 +34,7 @@ class RedirectManager:
         self._publisher = publisher
         self._click_topic = click_topic
 
+    @traced
     async def resolve_redirect(
         self,
         short_code: str,

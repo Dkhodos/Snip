@@ -19,6 +19,13 @@ def configure_logging(is_local: bool) -> None:
         timestamper,
     ]
 
+    try:
+        from snip_telemetry.processor import otel_context_processor
+
+        shared_processors.append(otel_context_processor)
+    except ImportError:
+        pass
+
     if is_local:
         renderer: structlog.types.Processor = structlog.dev.ConsoleRenderer()
     else:

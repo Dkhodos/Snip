@@ -6,6 +6,7 @@ from typing import Dict, Optional
 import httpx
 from snip_email import EmailClient, EmailMessage
 from snip_logger import get_logger
+from snip_telemetry import traced
 
 _log = get_logger("dashboard-backend", log_prefix="NotificationManager")
 
@@ -25,6 +26,7 @@ class NotificationManager:
         self._clerk_secret_key = clerk_secret_key
         self._click_threshold = click_threshold
 
+    @traced
     async def maybe_notify_click_threshold(
         self,
         click_count: int,

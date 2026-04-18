@@ -45,6 +45,13 @@ repos:
         files: ^packages/queue/.*\.py$
         pass_filenames: false
 
+      - id: lint-snip-telemetry
+        name: "lint: snip-telemetry"
+        entry: make telemetry:lint
+        language: system
+        files: ^packages/telemetry/.*\.py$
+        pass_filenames: false
+
       - id: lint-snip-storage
         name: "lint: snip-storage"
         entry: make storage:lint
@@ -121,6 +128,13 @@ repos:
         entry: make queue:type:check
         language: system
         files: ^packages/queue/.*\.py$
+        pass_filenames: false
+
+      - id: typecheck-snip-telemetry
+        name: "type-check: snip-telemetry"
+        entry: make telemetry:type:check
+        language: system
+        files: ^packages/telemetry/.*\.py$
         pass_filenames: false
 
       - id: typecheck-snip-storage
