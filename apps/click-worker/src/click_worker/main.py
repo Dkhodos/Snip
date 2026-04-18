@@ -14,7 +14,7 @@ from click_worker.routers import ingest
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    init_telemetry(settings.build_telemetry_config())
+    init_telemetry()
     configure_logging(is_local=settings.environment == "development")
     yield
 

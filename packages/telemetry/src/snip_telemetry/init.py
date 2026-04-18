@@ -9,12 +9,14 @@ from opentelemetry.semconv.resource import ResourceAttributes
 from snip_telemetry.config import TelemetryConfig
 
 
-def init_telemetry(config: TelemetryConfig) -> None:
+def init_telemetry(config: TelemetryConfig | None = None) -> None:
     """Configure OpenTelemetry tracing, metrics, and auto-instrumentation.
 
     Call before configure_logging() in the app lifespan so that the structlog
     processor can read trace context from an already-active TracerProvider.
     """
+    if config is None:
+        config = TelemetryConfig.from_env()
     resource = Resource.create(
         {
             ResourceAttributes.SERVICE_NAME: config.service_name,

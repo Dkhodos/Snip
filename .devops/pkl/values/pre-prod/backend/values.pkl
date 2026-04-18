@@ -15,7 +15,8 @@ og_image_public_url_base = "https://storage.googleapis.com/snip-og-images-pre-pr
 
 redirect_base_url = "https://r.pre-prod.snip-app.win"
 
-// OpenTelemetry instrumentation flags
+// OpenTelemetry
+otel_service_name = "dashboard-backend"
 otel_enable_fastapi = "true"
 otel_enable_sqlalchemy = "true"
 otel_enable_httpx = "true"
