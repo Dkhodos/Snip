@@ -6,16 +6,23 @@ dependencies = [
     "opentelemetry-api>=1.20",
     "opentelemetry-sdk>=1.20",
     "opentelemetry-exporter-otlp>=1.20",
-    "opentelemetry-instrumentation-fastapi>=0.41b0",
-    "opentelemetry-instrumentation-sqlalchemy>=0.41b0",
-    "opentelemetry-instrumentation-httpx>=0.41b0",
     "opentelemetry-semantic-conventions>=0.41b0",
     "structlog>=24.0",
 ]
 
 [project.optional-dependencies]
+fastapi = ["opentelemetry-instrumentation-fastapi>=0.41b0"]
+sqlalchemy = ["opentelemetry-instrumentation-sqlalchemy>=0.41b0"]
+httpx = ["opentelemetry-instrumentation-httpx>=0.41b0"]
 grpc = ["opentelemetry-instrumentation-grpc>=0.41b0"]
-dev = ["pytest", "pytest-asyncio", "pytest-cov", "ruff", "pyright>=1.1.400"]
+dev = [
+    "snip-telemetry[fastapi,sqlalchemy,httpx,grpc]",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "ruff",
+    "pyright>=1.1.400",
+]
 
 [build-system]
 requires = ["hatchling"]

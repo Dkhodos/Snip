@@ -6,7 +6,7 @@ dependencies = [
     "snip-queue",
     "snip-analytics",
     "snip-logger",
-    "snip-telemetry[grpc]",
+    "snip-telemetry[fastapi,httpx,grpc]",
     "fastapi[standard]",
     "pydantic-settings",
     "google-auth>=2.0",

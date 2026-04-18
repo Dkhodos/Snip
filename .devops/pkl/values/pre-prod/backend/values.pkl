@@ -14,3 +14,9 @@ og_image_bucket = "snip-og-images-pre-prod"
 og_image_public_url_base = "https://storage.googleapis.com/snip-og-images-pre-prod"
 
 redirect_base_url = "https://r.pre-prod.snip-app.win"
+
+// OpenTelemetry instrumentation flags
+otel_enable_fastapi = "true"
+otel_enable_sqlalchemy = "true"
+otel_enable_httpx = "true"
+otel_enable_grpc = "false"
