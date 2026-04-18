@@ -3,3 +3,10 @@
 analytics_provider = "gcp_bigquery"
 bq_dataset = "snip_analytics_pre_prod"
 bq_table = "click_events"
+
+// OpenTelemetry
+otel_service_name = "click-worker"
+otel_enable_fastapi = "true"
+otel_enable_sqlalchemy = "false"
+otel_enable_httpx = "true"
+otel_enable_grpc = "true"

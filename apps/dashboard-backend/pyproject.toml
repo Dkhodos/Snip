@@ -7,7 +7,7 @@ dependencies = [
     "snip-email",
     "snip-auth",
     "snip-logger",
-    "snip-telemetry",
+    "snip-telemetry[fastapi,sqlalchemy,httpx]",
     "snip-storage",
     "snip-og-image",
     "fastapi[standard]",

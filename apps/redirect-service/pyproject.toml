@@ -6,7 +6,7 @@ dependencies = [
     "snip-db[pg]",
     "snip-queue",
     "snip-logger",
-    "snip-telemetry[grpc]",
+    "snip-telemetry[fastapi,sqlalchemy,grpc]",
     "fastapi[standard]",
     "pydantic-settings",
 ]

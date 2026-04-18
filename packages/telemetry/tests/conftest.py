@@ -20,6 +20,7 @@ def _reset_otel():
         "opentelemetry.instrumentation.fastapi.FastAPIInstrumentor",
         "opentelemetry.instrumentation.sqlalchemy.SQLAlchemyInstrumentor",
         "opentelemetry.instrumentation.httpx.HTTPXClientInstrumentor",
+        "opentelemetry.instrumentation.grpc.GrpcInstrumentorClient",
     ]:
         try:
             module_path, cls_name = instrumentor_path.rsplit(".", 1)

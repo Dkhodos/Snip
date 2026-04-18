@@ -731,7 +731,7 @@ dependencies = [
     { name = "snip-analytics" },
     { name = "snip-logger" },
     { name = "snip-queue" },
-    { name = "snip-telemetry", extra = ["grpc"] },
+    { name = "snip-telemetry", extra = ["fastapi", "grpc", "httpx"] },
 ]
 
 [package.optional-dependencies]
@@ -758,7 +758,7 @@ requires-dist = [
     { name = "snip-analytics", editable = "packages/analytics" },
     { name = "snip-logger", editable = "packages/logger" },
     { name = "snip-queue", editable = "packages/queue" },
-    { name = "snip-telemetry", extras = ["grpc"], editable = "packages/telemetry" },
+    { name = "snip-telemetry", extras = ["fastapi", "httpx", "grpc"], editable = "packages/telemetry" },
 ]
 provides-extras = ["dev"]
 
@@ -977,7 +977,7 @@ dependencies = [
     { name = "snip-logger" },
     { name = "snip-og-image" },
     { name = "snip-storage" },
-    { name = "snip-telemetry" },
+    { name = "snip-telemetry", extra = ["fastapi", "httpx", "sqlalchemy"] },
 ]
 
 [package.optional-dependencies]
@@ -1010,7 +1010,7 @@ requires-dist = [
     { name = "snip-logger", editable = "packages/logger" },
     { name = "snip-og-image", editable = "packages/og-image" },
     { name = "snip-storage", editable = "packages/storage" },
-    { name = "snip-telemetry", editable = "packages/telemetry" },
+    { name = "snip-telemetry", extras = ["fastapi", "sqlalchemy", "httpx"], editable = "packages/telemetry" },
 ]
 provides-extras = ["dev"]
 
@@ -3512,7 +3512,7 @@ dependencies = [
     { name = "snip-db", extra = ["pg"] },
     { name = "snip-logger" },
     { name = "snip-queue" },
-    { name = "snip-telemetry", extra = ["grpc"] },
+    { name = "snip-telemetry", extra = ["fastapi", "grpc", "sqlalchemy"] },
 ]
 
 [package.optional-dependencies]
@@ -3540,7 +3540,7 @@ requires-dist = [
     { name = "snip-db", extras = ["pg"], editable = "packages/db" },
     { name = "snip-logger", editable = "packages/logger" },
     { name = "snip-queue", editable = "packages/queue" },
-    { name = "snip-telemetry", extras = ["grpc"], editable = "packages/telemetry" },
+    { name = "snip-telemetry", extras = ["fastapi", "sqlalchemy", "grpc"], editable = "packages/telemetry" },
 ]
 provides-extras = ["dev"]
 
@@ -4310,9 +4310,6 @@ source = { editable = "packages/telemetry" }
 dependencies = [
     { name = "opentelemetry-api" },
     { name = "opentelemetry-exporter-otlp" },
-    { name = "opentelemetry-instrumentation-fastapi" },
-    { name = "opentelemetry-instrumentation-httpx" },
-    { name = "opentelemetry-instrumentation-sqlalchemy" },
     { name = "opentelemetry-sdk" },
     { name = "opentelemetry-semantic-conventions" },
     { name = "structlog" },
@@ -4320,24 +4317,37 @@ dependencies = [
 
 [package.optional-dependencies]
 dev = [
+    { name = "opentelemetry-instrumentation-fastapi" },
+    { name = "opentelemetry-instrumentation-grpc" },
+    { name = "opentelemetry-instrumentation-httpx" },
+    { name = "opentelemetry-instrumentation-sqlalchemy" },
     { name = "pyright" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
     { name = "ruff" },
 ]
+fastapi = [
+    { name = "opentelemetry-instrumentation-fastapi" },
+]
 grpc = [
     { name = "opentelemetry-instrumentation-grpc" },
+]
+httpx = [
+    { name = "opentelemetry-instrumentation-httpx" },
+]
+sqlalchemy = [
+    { name = "opentelemetry-instrumentation-sqlalchemy" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "opentelemetry-api", specifier = ">=1.20" },
     { name = "opentelemetry-exporter-otlp", specifier = ">=1.20" },
-    { name = "opentelemetry-instrumentation-fastapi", specifier = ">=0.41b0" },
+    { name = "opentelemetry-instrumentation-fastapi", marker = "extra == 'fastapi'", specifier = ">=0.41b0" },
     { name = "opentelemetry-instrumentation-grpc", marker = "extra == 'grpc'", specifier = ">=0.41b0" },
-    { name = "opentelemetry-instrumentation-httpx", specifier = ">=0.41b0" },
-    { name = "opentelemetry-instrumentation-sqlalchemy", specifier = ">=0.41b0" },
+    { name = "opentelemetry-instrumentation-httpx", marker = "extra == 'httpx'", specifier = ">=0.41b0" },
+    { name = "opentelemetry-instrumentation-sqlalchemy", marker = "extra == 'sqlalchemy'", specifier = ">=0.41b0" },
     { name = "opentelemetry-sdk", specifier = ">=1.20" },
     { name = "opentelemetry-semantic-conventions", specifier = ">=0.41b0" },
     { name = "pyright", marker = "extra == 'dev'", specifier = ">=1.1.400" },
@@ -4345,9 +4355,10 @@ requires-dist = [
     { name = "pytest-asyncio", marker = "extra == 'dev'" },
     { name = "pytest-cov", marker = "extra == 'dev'" },
     { name = "ruff", marker = "extra == 'dev'" },
+    { name = "snip-telemetry", extras = ["fastapi", "sqlalchemy", "httpx", "grpc"], marker = "extra == 'dev'" },
     { name = "structlog", specifier = ">=24.0" },
 ]
-provides-extras = ["grpc", "dev"]
+provides-extras = ["fastapi", "sqlalchemy", "httpx", "grpc", "dev"]
 
 [[package]]
 name = "snip-terraform"
