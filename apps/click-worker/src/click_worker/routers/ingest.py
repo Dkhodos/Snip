@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from snip_analytics import AnalyticsClient, ClickEventRow
 from snip_logger import get_logger
 from snip_queue import ClickEventMessage
+from snip_telemetry import traced
 
 from click_worker.dependencies import get_analytics_client, verify_pubsub_token
 
@@ -28,6 +29,7 @@ class PubSubEnvelope(BaseModel):
 
 
 @router.post("/ingest", response_model=None)
+@traced
 async def ingest(
     envelope: PubSubEnvelope,
     analytics: AnalyticsClient = Depends(get_analytics_client),

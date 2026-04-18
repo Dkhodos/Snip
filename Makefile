@@ -21,6 +21,7 @@ PROJECTS := \
 	email:packages/email \
 	auth:packages/auth \
 	logger:packages/logger \
+	telemetry:packages/telemetry \
 	queue:packages/queue \
 	analytics:packages/analytics \
 	storage:packages/storage \

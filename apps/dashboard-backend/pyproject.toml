@@ -7,6 +7,7 @@ dependencies = [
     "snip-email",
     "snip-auth",
     "snip-logger",
+    "snip-telemetry",
     "snip-storage",
     "snip-og-image",
     "fastapi[standard]",
@@ -23,6 +24,7 @@ snip-db = { workspace = true }
 snip-email = { workspace = true }
 snip-auth = { workspace = true }
 snip-logger = { workspace = true }
+snip-telemetry = { workspace = true }
 snip-storage = { workspace = true }
 snip-og-image = { workspace = true }
 

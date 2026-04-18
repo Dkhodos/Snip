@@ -6,6 +6,7 @@ from typing import Dict
 
 from fastapi import FastAPI
 from snip_logger import configure_logging, logging_middleware
+from snip_telemetry import init_telemetry
 
 from click_worker.config import settings
 from click_worker.routers import ingest
@@ -13,6 +14,7 @@ from click_worker.routers import ingest
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    init_telemetry("click-worker", is_local=settings.environment == "development")
     configure_logging(is_local=settings.environment == "development")
     yield
 

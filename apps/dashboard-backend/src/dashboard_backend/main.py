@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from snip_auth import AuthenticationError, OrganizationRequiredError
 from snip_db.engine import create_engine, create_session_factory, init_session_factory
 from snip_logger import configure_logging, logging_middleware
+from snip_telemetry import init_telemetry
 
 from dashboard_backend.config import settings
 from dashboard_backend.exceptions import (
@@ -23,6 +24,7 @@ from dashboard_backend.routers import clicks, flags, links, og_image, stats
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan: set up and tear down DB engine."""
+    init_telemetry("dashboard-backend", is_local=settings.environment == "development")
     configure_logging(is_local=settings.environment == "development")
     engine = create_engine(settings.effective_database_url)
     session_factory = create_session_factory(engine)

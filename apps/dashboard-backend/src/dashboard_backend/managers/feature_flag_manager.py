@@ -5,6 +5,7 @@ from typing import Dict, Optional
 
 from snip_db.stores.feature_flag_store import FeatureFlagStore
 from snip_logger import get_logger
+from snip_telemetry import traced
 
 _log = get_logger("dashboard-backend", log_prefix="FeatureFlagManager")
 
@@ -19,6 +20,7 @@ class FeatureFlagManager:
     def __init__(self, feature_flag_store: FeatureFlagStore) -> None:
         self._store = feature_flag_store
 
+    @traced
     async def get_all_flags(self) -> Dict[str, bool]:
         global _flags_cache, _flags_cache_time
 

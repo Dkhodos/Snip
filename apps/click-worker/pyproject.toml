@@ -6,6 +6,7 @@ dependencies = [
     "snip-queue",
     "snip-analytics",
     "snip-logger",
+    "snip-telemetry[grpc]",
     "fastapi[standard]",
     "pydantic-settings",
     "google-auth>=2.0",
@@ -18,6 +19,7 @@ dev = ["pytest", "pytest-asyncio", "pytest-cov", "httpx", "ruff", "pyright>=1.1.
 snip-queue = { workspace = true }
 snip-analytics = { workspace = true }
 snip-logger = { workspace = true }
+snip-telemetry = { workspace = true }
 
 [tool.ruff]
 target-version = "py312"

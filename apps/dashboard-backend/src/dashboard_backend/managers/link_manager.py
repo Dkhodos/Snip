@@ -6,6 +6,7 @@ import shortuuid
 from snip_db.models import Link
 from snip_db.stores.link_store import LinkStore
 from snip_logger import get_logger
+from snip_telemetry import traced
 
 from dashboard_backend.exceptions import (
     InvalidSortFieldError,
@@ -22,6 +23,7 @@ class LinkManager:
     def __init__(self, link_store: LinkStore) -> None:
         self._link_store = link_store
 
+    @traced
     async def create_link(
         self,
         *,
@@ -48,6 +50,7 @@ class LinkManager:
         _log.info("link_created", short_code=short_code, org_id=org_id, link_id=str(link.id))
         return link
 
+    @traced
     async def list_links(
         self,
         org_id: str,
@@ -72,12 +75,14 @@ class LinkManager:
             status=status,
         )
 
+    @traced
     async def get_link(self, link_id: object, org_id: str) -> Link:
         link = await self._link_store.get_by_id(link_id, org_id)  # type: ignore[arg-type]
         if not link:
             raise LinkNotFoundError()
         return link
 
+    @traced
     async def update_link(self, link_id: object, org_id: str, **fields: object) -> Link:
         link = await self.get_link(link_id, org_id)
         updated = await self._link_store.update(link, **fields)
@@ -85,11 +90,13 @@ class LinkManager:
         _log.info("link_updated", link_id=str(link_id), fields=list(fields.keys()))
         return updated
 
+    @traced
     async def delete_link(self, link_id: object, org_id: str) -> None:
         link = await self.get_link(link_id, org_id)
         await self._link_store.soft_delete(link)
         await self._link_store.commit()
         _log.info("link_deleted", link_id=str(link_id), org_id=org_id)
 
+    @traced
     async def get_stats(self, org_id: str) -> dict:
         return await self._link_store.get_stats(org_id)

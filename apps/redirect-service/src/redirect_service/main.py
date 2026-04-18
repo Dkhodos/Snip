@@ -8,6 +8,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from snip_db.engine import create_engine, create_session_factory, init_session_factory
 from snip_logger import configure_logging, logging_middleware
+from snip_telemetry import init_telemetry
 
 from redirect_service.config import settings
 from redirect_service.exceptions import LinkExpiredError, LinkNotFoundError
@@ -16,6 +17,7 @@ from redirect_service.routers import redirect
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    init_telemetry("redirect-service", is_local=settings.environment == "development")
     configure_logging(is_local=settings.environment == "development")
     engine = create_engine(settings.effective_database_url)
     session_factory = create_session_factory(engine)

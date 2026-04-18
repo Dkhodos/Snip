@@ -49,6 +49,14 @@ services:
         echo 'MinIO ready: bucket snip-og-images created and set to public'
       "
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "4317:4317"     # OTLP gRPC
+      - "16686:16686"   # Jaeger UI
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+
 volumes:
   pgdata:
   minio_data:
