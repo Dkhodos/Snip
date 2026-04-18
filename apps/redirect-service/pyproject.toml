@@ -41,6 +41,9 @@ exclude = ["tests"]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.coverage.run]
+omit = ["src/redirect_service/cli.py"]
+
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 testpaths = ["tests"]
