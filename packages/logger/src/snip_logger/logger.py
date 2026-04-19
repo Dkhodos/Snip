@@ -1,13 +1,11 @@
 """Factory for bound loggers."""
 
-from typing import Optional
-
 import structlog
 
 
 def get_logger(
     app_name: str,
-    log_prefix: Optional[str] = None,
+    log_prefix: str | None = None,
 ) -> structlog.stdlib.BoundLogger:
     """Return a structlog logger bound with app context.
 

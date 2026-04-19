@@ -1,7 +1,6 @@
 """Dev email provider that logs instead of sending."""
 
 import logging
-from typing import Optional
 
 from snip_email.protocol import EmailClient, EmailMessage
 
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 class DevEmailClient:
     """Dev bypass email client that logs messages instead of sending."""
 
-    async def send(self, message: EmailMessage) -> Optional[str]:
+    async def send(self, message: EmailMessage) -> str | None:
         logger.info(
             "email_sent provider=dev to=%s subject=%s",
             message.to,

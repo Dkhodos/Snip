@@ -2,7 +2,6 @@
 
 import io
 import re
-from typing import Optional
 from urllib.parse import urljoin, urlparse
 
 import httpx
@@ -15,7 +14,7 @@ from snip_og_image.models import SitePreview
 _log = get_logger("snip-og-image", log_prefix="preview")
 
 
-def extract_og_image_url(html: str) -> Optional[str]:
+def extract_og_image_url(html: str) -> str | None:
     pattern = re.compile(
         r'<meta[^>]+property=["\']og:image["\'][^>]+content=["\']([^"\']+)["\']',
         re.IGNORECASE,

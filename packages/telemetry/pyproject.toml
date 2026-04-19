@@ -1,13 +1,13 @@
 [project]
 name = "snip-telemetry"
 version = "0.1.0"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "opentelemetry-api>=1.20",
     "opentelemetry-sdk>=1.20",
     "opentelemetry-exporter-otlp>=1.20",
     "opentelemetry-semantic-conventions>=0.41b0",
-    "structlog>=24.0",
+    "structlog>=24.0"
 ]
 
 [project.optional-dependencies]
@@ -24,17 +24,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.ruff]
-target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = [
-    "UP006",
-    "UP007",
     "UP035",
     "UP045",
-    "UP047",
+    "UP047"
 ]
 
 [tool.pytest.ini_options]
@@ -42,7 +39,7 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 
 [tool.pyright]
-pythonVersion = "3.12"
+pythonVersion = "3.14"
 typeCheckingMode = "standard"
 exclude = ["tests"]
 reportMissingImports = "warning"

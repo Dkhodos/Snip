@@ -2,7 +2,7 @@
 
 import base64
 import logging
-from typing import Any, Dict, Optional, cast
+from typing import Any, cast
 
 import httpx
 import jwt
@@ -21,7 +21,7 @@ class ClerkClient:
 
     def __init__(self, publishable_key: str) -> None:
         self._publishable_key = publishable_key
-        self._jwks_cache: Optional[Dict] = None
+        self._jwks_cache: dict | None = None
 
     def _get_jwks_url(self) -> str:
         encoded = self._publishable_key.split("_", 2)[-1]
@@ -29,7 +29,7 @@ class ClerkClient:
         frontend_api = base64.b64decode(padded).decode().rstrip("$")
         return f"https://{frontend_api}/.well-known/jwks.json"
 
-    async def _get_jwks(self) -> Dict:
+    async def _get_jwks(self) -> dict:
         if self._jwks_cache is None:
             url = self._get_jwks_url()
             async with httpx.AsyncClient() as client:
@@ -44,7 +44,7 @@ class ClerkClient:
         try:
             jwks = await self._get_jwks()
             unverified_header = jwt.get_unverified_header(token)
-            jwk: Optional[Dict[str, Any]] = None
+            jwk: dict[str, Any] | None = None
             for k in jwks.get("keys", []):
                 if k["kid"] == unverified_header.get("kid"):
                     jwk = k
@@ -79,7 +79,7 @@ class ClerkClient:
             _log.info("token_verified", extra={"user_id": user_id, "org_id": org_id})
             return AuthUser(user_id=user_id, org_id=org_id)
 
-        except (PyJWTError, AuthenticationError, OrganizationRequiredError):
+        except PyJWTError, AuthenticationError, OrganizationRequiredError:
             raise
         except Exception as e:
             _log.warning("token_verification_unexpected_error", extra={"error": str(e)})

@@ -20,7 +20,7 @@ class TelemetryConfig:
     environment: str = "development"
 
     @classmethod
-    def from_env(cls) -> "TelemetryConfig":
+    def from_env(cls) -> TelemetryConfig:
         service_name = os.environ.get("OTEL_SERVICE_NAME", "")
         if not service_name:
             raise ValueError("OTEL_SERVICE_NAME environment variable is required")

@@ -1,7 +1,5 @@
 """Link business logic manager."""
 
-from typing import List, Optional, Tuple
-
 import shortuuid
 from snip_db.models import Link
 from snip_db.stores.link_store import LinkStore
@@ -31,7 +29,7 @@ class LinkManager:
         user_id: str,
         target_url: str,
         title: str,
-        custom_short_code: Optional[str] = None,
+        custom_short_code: str | None = None,
     ) -> Link:
         short_code = custom_short_code or shortuuid.uuid()[:8]
 
@@ -57,11 +55,11 @@ class LinkManager:
         *,
         page: int = 1,
         limit: int = 20,
-        search: Optional[str] = None,
+        search: str | None = None,
         sort_by: str = "created_at",
         sort_order: str = "desc",
-        status: Optional[str] = None,
-    ) -> Tuple[List[Link], int]:
+        status: str | None = None,
+    ) -> tuple[list[Link], int]:
         if sort_by not in ALLOWED_SORT_FIELDS:
             raise InvalidSortFieldError(ALLOWED_SORT_FIELDS)
 
