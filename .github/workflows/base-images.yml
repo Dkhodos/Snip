@@ -32,7 +32,7 @@ jobs:
   build:
     name: Build & Push ${{ matrix.name }}
     needs: wait
-    if: ${{ !cancelled() && (needs.wait.result == 'success' || needs.wait.result == 'skipped') }}
+    if: ${{ !cancelled() && vars.DEPLOYMENTS_ENABLED == 'true' && (needs.wait.result == 'success' || needs.wait.result == 'skipped') }}
     runs-on: ubuntu-latest
     environment: ${{ vars.ENVIRONMENT }}
     permissions:
