@@ -33,7 +33,7 @@ class ClickEventMessage:
         return orjson.dumps(data)
 
     @classmethod
-    def from_json(cls, data: bytes) -> "ClickEventMessage":
+    def from_json(cls, data: bytes) -> ClickEventMessage:
         """Deserialize from JSON bytes."""
         parsed = orjson.loads(data)
         return cls(

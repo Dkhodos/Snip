@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Optional
 
 from snip_db.stores.link_store import LinkStore
 from snip_logger import get_logger
@@ -18,8 +17,8 @@ _log = get_logger("redirect-service", log_prefix="RedirectManager")
 class RedirectResult:
     target_url: str
     click_count: int
-    created_by: Optional[str]
-    title: Optional[str] = None
+    created_by: str | None
+    title: str | None = None
     short_code: str = ""
 
 

@@ -1,12 +1,12 @@
 [project]
 name = "snip-db"
 version = "0.1.0"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "sqlalchemy>=2.0",
     "alembic>=1.13",
     "psycopg[binary]>=3.1",
-    "greenlet>=3.3.2",
+    "greenlet>=3.3.2"
 ]
 
 [project.optional-dependencies]
@@ -20,17 +20,12 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.ruff]
-target-version = "py312"
 line-length = 100
 exclude = ["src/snip_db/migrations"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = [
-    "UP006",  # Keep typing.List/Dict/Tuple for Python 3.12 runtime compat
-    "UP007",  # Keep Optional[X] for Python 3.12 runtime compat
-    "UP035",  # Keep typing.List/Dict/Tuple imports for Python 3.12 runtime compat
-    "UP045",  # Keep Optional[X] for Python 3.12 runtime compat
 ]
 
 [tool.pytest.ini_options]
@@ -38,7 +33,7 @@ asyncio_mode = "auto"
 testpaths = ["tests"]
 
 [tool.pyright]
-pythonVersion = "3.12"
+pythonVersion = "3.14"
 typeCheckingMode = "standard"
 exclude = ["src/snip_db/migrations", "tests"]
 
@@ -46,5 +41,5 @@ exclude = ["src/snip_db/migrations", "tests"]
 omit = [
     "src/snip_db/migrations/*",
     "src/snip_db/engine.py",
-    "src/snip_db/types/*",
+    "src/snip_db/types/*"
 ]

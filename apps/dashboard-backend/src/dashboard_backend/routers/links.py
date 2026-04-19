@@ -1,7 +1,6 @@
 """Links CRUD router."""
 
 from datetime import datetime
-from typing import Optional
 from urllib.parse import urlparse
 from uuid import UUID
 
@@ -111,10 +110,10 @@ async def create_link(
 async def list_links(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
-    search: Optional[str] = Query(None),
+    search: str | None = Query(None),
     sort_by: str = Query("created_at"),
     sort_order: str = Query("desc"),
-    status: Optional[str] = Query(None),
+    status: str | None = Query(None),
     user: AuthUser = Depends(get_current_user),
     manager: LinkManager = Depends(get_link_manager),
 ) -> dict:

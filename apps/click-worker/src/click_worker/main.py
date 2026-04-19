@@ -2,7 +2,6 @@
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Dict
 
 from fastapi import FastAPI
 from snip_logger import configure_logging, logging_middleware
@@ -13,7 +12,7 @@ from click_worker.routers import ingest
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     init_telemetry()
     configure_logging(is_local=settings.environment == "development")
     yield
@@ -27,5 +26,5 @@ app.include_router(ingest.router)
 
 
 @app.get("/health")
-async def health() -> Dict[str, str]:
+async def health() -> dict[str, str]:
     return {"status": "ok"}

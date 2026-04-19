@@ -6,7 +6,6 @@ SMTP default: localhost:1025.
 
 import logging
 from email.message import EmailMessage as StdlibEmailMessage
-from typing import Optional
 
 import aiosmtplib
 
@@ -32,7 +31,7 @@ class MailpitClient:
         self._host = host
         self._port = port
 
-    async def send(self, message: EmailMessage) -> Optional[str]:
+    async def send(self, message: EmailMessage) -> str | None:
         msg = StdlibEmailMessage()
         msg["From"] = self._from_email
         msg["To"] = ", ".join(message.to)

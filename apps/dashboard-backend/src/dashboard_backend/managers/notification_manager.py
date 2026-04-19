@@ -1,7 +1,6 @@
 """Notification business logic manager."""
 
 import html as html_mod
-from typing import Dict, Optional
 
 import httpx
 from snip_email import EmailClient, EmailMessage
@@ -17,7 +16,7 @@ class NotificationManager:
     def __init__(
         self,
         email_client: EmailClient,
-        feature_flags: Dict[str, bool],
+        feature_flags: dict[str, bool],
         clerk_secret_key: str,
         click_threshold: int,
     ) -> None:
@@ -32,7 +31,7 @@ class NotificationManager:
         click_count: int,
         short_code: str,
         target_url: str,
-        created_by: Optional[str],
+        created_by: str | None,
     ) -> None:
         """Send notification if click_count just crossed the threshold."""
         if click_count != self._click_threshold:
@@ -62,7 +61,7 @@ class NotificationManager:
         except Exception:
             _log.exception("click_threshold_email_failed", short_code=short_code)
 
-    async def _get_user_email(self, user_id: str) -> Optional[str]:
+    async def _get_user_email(self, user_id: str) -> str | None:
         """Fetch user email from Clerk Backend API."""
         if not self._clerk_secret_key or self._clerk_secret_key == "sk_test_...":
             return "dev@example.com"

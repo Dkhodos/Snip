@@ -2,7 +2,6 @@
 
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import Dict
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -22,7 +21,7 @@ from dashboard_backend.routers import clicks, flags, links, og_image, stats
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
     """Application lifespan: set up and tear down DB engine."""
     init_telemetry()
     configure_logging(is_local=settings.environment == "development")
@@ -91,5 +90,5 @@ app.include_router(stats.router)
 
 
 @app.get("/health")
-async def health() -> Dict[str, str]:
+async def health() -> dict[str, str]:
     return {"status": "ok"}

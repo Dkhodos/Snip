@@ -1,7 +1,7 @@
 [project]
 name = "click-worker"
 version = "0.1.0"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 dependencies = [
     "snip-queue",
     "snip-analytics",
@@ -9,7 +9,7 @@ dependencies = [
     "snip-telemetry[fastapi,httpx,grpc]",
     "fastapi[standard]",
     "pydantic-settings",
-    "google-auth>=2.0",
+    "google-auth>=2.0"
 ]
 
 [project.scripts]
@@ -26,7 +26,6 @@ snip-logger = { workspace = true }
 snip-telemetry = { workspace = true }
 
 [tool.ruff]
-target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
@@ -34,7 +33,7 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 ignore = ["B008", "UP006", "UP007", "UP035", "UP045"]
 
 [tool.pyright]
-pythonVersion = "3.12"
+pythonVersion = "3.14"
 typeCheckingMode = "standard"
 exclude = ["tests"]
 

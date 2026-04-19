@@ -2,7 +2,6 @@
 
 import functools
 import io
-from typing import Optional
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -132,7 +131,7 @@ def _draw_right_panel(
 
 def generate_image(
     data: OgImageData,
-    preview: Optional[SitePreview] = None,
+    preview: SitePreview | None = None,
 ) -> bytes:
     """Render a 1200x630 PNG OG image using Pillow."""
     img = Image.new("RGB", (WIDTH, HEIGHT), color=BG_COLOR)

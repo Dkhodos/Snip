@@ -1,7 +1,7 @@
 """Resend email provider."""
 
 import logging
-from typing import Any, Optional
+from typing import Any
 
 import resend
 
@@ -17,7 +17,7 @@ class ResendClient:
         self._api_key = api_key
         self._from_email = from_email
 
-    async def send(self, message: EmailMessage) -> Optional[str]:
+    async def send(self, message: EmailMessage) -> str | None:
         resend.api_key = self._api_key
         params: Any = {
             "from": self._from_email,

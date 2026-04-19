@@ -29,7 +29,7 @@ def init_session_factory(factory: async_sessionmaker[AsyncSession]) -> None:
     _session_factory = factory
 
 
-async def get_session() -> AsyncGenerator[AsyncSession, None]:
+async def get_session() -> AsyncGenerator[AsyncSession]:
     """FastAPI dependency that yields an async session."""
     if _session_factory is None:
         msg = "Database session factory not initialized. Call init_session_factory() first."
