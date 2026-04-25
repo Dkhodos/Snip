@@ -68,7 +68,7 @@ See each app/package README for details.
 | Layer | Tech                                                   |
 |-------|--------------------------------------------------------|
 | Backend | Python 3.12+, FastAPI, SQLAlchemy 2.0, Pydantic        |
-| Frontend | React 19, TypeScript, TanStack Router/Query, Tailwind |
+| Frontend | React 19, TypeScript 7 beta (`tsgo`), TanStack Router/Query, Tailwind |
 | Auth | Clerk                                                  |
 | Database | PostgreSQL (asyncpg)                                   |
 | Analytics | Google BigQuery                                        |

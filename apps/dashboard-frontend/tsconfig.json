@@ -15,7 +15,8 @@
 		"noUnusedParameters": true,
 		"noFallthroughCasesInSwitch": true,
 		"noUncheckedIndexedAccess": true,
-		"baseUrl": ".",
+		"types": ["node", "vite/client"],
+		"rootDir": "./",
 		"paths": {
 			"@/*": ["./src/*"]
 		}
