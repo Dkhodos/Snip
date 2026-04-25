@@ -55,7 +55,7 @@ lint\:fix: sync ## Auto-fix lint issues and format
 # ──────────────────────────────────────────────────────────────
 
 type-check: sync ## Run TypeScript type checking
-	$(PNPM) exec tsc --noEmit
+	$(PNPM) exec tsgo --noEmit
 
 # ──────────────────────────────────────────────────────────────
 #  Test
@@ -69,7 +69,7 @@ test: sync ## Run unit tests
 # ──────────────────────────────────────────────────────────────
 
 build: sync ## Build for production
-	$(PNPM) exec tsc -b
+	$(PNPM) exec tsgo -b
 	$(PNPM) exec vite build
 
 # ──────────────────────────────────────────────────────────────

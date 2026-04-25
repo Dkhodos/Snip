@@ -4,7 +4,7 @@ React SPA for managing short links and viewing click analytics.
 
 ## Tech
 
-- React 19 + TypeScript
+- React 19 + TypeScript 7 beta ([`@typescript/native-preview`](https://devblogs.microsoft.com/typescript/announcing-typescript-7-0-beta/) — Go-based `tsgo` compiler)
 - TanStack Router + React Query
 - Radix UI + Tailwind CSS
 - Clerk (authentication)
